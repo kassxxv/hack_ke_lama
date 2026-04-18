@@ -3,14 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, BarChart2, CreditCard, Landmark } from 'lucide-react'
-
-const NAV = [
-  { label: 'Domov', href: '/', icon: Home },
-  { label: 'Prehľady', href: '/prehlady', icon: BarChart2 },
-  { label: 'Platba', href: '/platba', isPrimary: true },
-  { label: 'Karty', href: '/karty', icon: CreditCard },
-  { label: 'Banka', href: '/banka', icon: Landmark },
-]
+import { useEffect, useState } from 'react'
+import { T, getLang } from '@/lib/i18n'
 
 function PlatbaIcon() {
   return (
@@ -23,6 +17,20 @@ function PlatbaIcon() {
 
 export default function TBShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [nav, setNav] = useState(T.sk.nav)
+
+  useEffect(() => {
+    const lang = getLang(localStorage.getItem('lang') ?? undefined)
+    setNav(T[lang].nav)
+  }, [])
+
+  const NAV = [
+    { label: nav.home, href: '/', icon: Home },
+    { label: nav.analytics, href: '/prehlady', icon: BarChart2 },
+    { label: nav.pay, href: '/platba', isPrimary: true },
+    { label: nav.cards, href: '/karty', icon: CreditCard },
+    { label: nav.bank, href: '/banka', icon: Landmark },
+  ]
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: '#000000' }}>
@@ -31,7 +39,6 @@ export default function TBShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Bottom nav — exact TB style */}
       <nav
         className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)', background: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(20px)', borderTop: '0.5px solid #38383a' }}

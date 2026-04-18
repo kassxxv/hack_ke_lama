@@ -1,12 +1,13 @@
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import QuickActions from '@/components/QuickActions'
-import { ChevronRight, Mail, Settings } from 'lucide-react'
+import { Mail, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { connectDB } from '@/lib/mongoose'
 import { GroupModel, ExpenseModel } from '@/models/Group'
 import { UserModel } from '@/models/User'
+import { T, getLang } from '@/lib/i18n'
 
 
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -56,37 +57,33 @@ async function getTeaserData() {
 
 export default async function Home() {
   const { totalOwed, groupCount, userName } = await getTeaserData()
-  const teaserLabel = totalOwed > 0
-    ? `Dlhujú ti celkom ${totalOwed.toFixed(2).replace('.', ',')} €`
-    : totalOwed < 0
-    ? `Dlhuješ celkom ${Math.abs(totalOwed).toFixed(2).replace('.', ',')} €`
-    : 'Všetko vyrovnané 🎉'
+  const cookieStore = await cookies()
+  const lang = getLang(cookieStore.get('sv_lang')?.value)
+  const t = T[lang]
+  const amt = Math.abs(totalOwed).toFixed(2).replace('.', ',')
+  const teaserLabel = totalOwed > 0 ? t.owedToYou(amt) : totalOwed < 0 ? t.youOwe(amt) : t.allSettled
 
   return (
     <TBShell>
       <SwipeLayout onSwipeLeft="/groups">
         <div className="px-4 pt-3">
 
-          {/* Top bar */}
-          <div className="flex items-center justify-between mb-5">
-            <div className="relative">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
-                <Mail size={18} color="#ffffff" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: '#0a84ff' }}>2</div>
+          {/* Top bar — avatar absolutely centered */}
+          <div className="relative flex items-center mb-5" style={{ height: '36px' }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
+              <Mail size={18} color="#ffffff" />
             </div>
-            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>{userName.charAt(0)}</div>
-            <Link href="/nastavenia" className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
+            <div className="absolute left-1/2 -translate-x-1/2 w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>
+              {userName.charAt(0)}
+            </div>
+            <Link href="/nastavenia" className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
               <Settings size={18} color="#ffffff" />
             </Link>
           </div>
 
           {/* Account identity */}
           <div className="text-center mb-1">
-            <div className="flex items-center justify-center gap-1">
-              <span className="text-[17px] font-bold text-white">{userName}</span>
-              <ChevronRight size={16} color="#0a84ff" />
-            </div>
+            <span className="text-[17px] font-bold text-white">{userName}</span>
             <div className="text-[12px]" style={{ color: '#8e8e93' }}>SK06 1100 0000 0029 3790 7102</div>
           </div>
 
@@ -96,7 +93,7 @@ export default async function Home() {
               <span className="text-[42px] font-bold text-white tracking-tight">2 341,50</span>
               <span className="text-[22px] font-semibold" style={{ color: '#8e8e93' }}>EUR</span>
             </div>
-            <div className="text-[12px]" style={{ color: '#8e8e93' }}>Účtovný zostatok platný k 18.04.2026 11:43</div>
+            <div className="text-[12px]" style={{ color: '#8e8e93' }}>{t.balanceLabel}</div>
           </div>
 
           {/* Sparkline */}
@@ -121,22 +118,11 @@ export default async function Home() {
           {/* Quick actions */}
           <QuickActions />
 
-          {/* Groups teaser */}
-          <Link href="/groups">
-            <div className="rounded-2xl p-4 mb-5 flex items-center justify-between" style={{ background: '#1c1c1e', border: '1px solid #0a84ff33' }}>
-              <div>
-                <div className="text-[11px] font-semibold mb-0.5 uppercase tracking-wide" style={{ color: '#0a84ff' }}>Spoločné výdavky</div>
-                <div className={`text-[15px] font-semibold text-white`}><span className={`font-mono ${totalOwed < 0 ? 'text-[#ff3b30]' : 'text-[#30d158]'}`}>{teaserLabel}</span></div>
-                <div className="text-[12px] mt-0.5" style={{ color: '#8e8e93' }}>{groupCount} {groupCount === 1 ? 'skupina' : groupCount < 5 ? 'skupiny' : 'skupín'} · potiahnuť doľava →</div>
-              </div>
-              <ChevronRight size={20} color="#0a84ff" />
-            </div>
-          </Link>
 
           {/* Transactions */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[17px] font-bold text-white">Posledné pohyby</span>
-            <Link href="/" className="text-[14px]" style={{ color: '#0a84ff' }}>Všetky pohyby</Link>
+            <span className="text-[17px] font-bold text-white">{t.recentTx}</span>
+            <Link href="/" className="text-[14px]" style={{ color: '#0a84ff' }}>{t.allTx}</Link>
           </div>
 
           <div>
@@ -151,7 +137,7 @@ export default async function Home() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[14px] font-semibold text-white truncate">{tx.merchant}</div>
-                    <div className="text-[12px]" style={{ color: '#8e8e93' }}>Platba kartou · {tx.date}</div>
+                    <div className="text-[12px]" style={{ color: '#8e8e93' }}>{t.cardPayment} · {tx.date}</div>
                   </div>
                   <div className="text-right flex-shrink-0">
                     <div className={`text-[15px] font-semibold ${tx.amount < 0 ? 'text-[#ff3b30]' : 'text-[#30d158]'}`}>
@@ -160,7 +146,7 @@ export default async function Home() {
                     <div className="text-[11px]" style={{ color: '#8e8e93' }}>☁ 0,26 kg CO₂e</div>
                     {tx.canSplit && (
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: '#1c3a5e', color: '#0a84ff' }}>
-                        Rozdeliť
+                        {t.split}
                       </span>
                     )}
                   </div>
