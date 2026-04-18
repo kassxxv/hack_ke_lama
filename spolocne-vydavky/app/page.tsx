@@ -1,7 +1,7 @@
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import QuickActions from '@/components/QuickActions'
-import { Mail, Settings, ChevronRight } from 'lucide-react'
+import { Mail, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { connectDB } from '@/lib/mongoose'
@@ -129,7 +129,6 @@ export default async function Home() {
                 <div className={`text-[15px] font-semibold text-white`}><span className={`font-mono ${totalOwed < 0 ? 'text-[#ff3b30]' : 'text-[#30d158]'}`}>{teaserLabel}</span></div>
                 <div className="text-[12px] mt-0.5" style={{ color: '#8e8e93' }}>{t.groups(groupCount)} · {t.swipeLeft}</div>
               </div>
-              <ChevronRight size={20} color="#0a84ff" />
             </div>
           </Link>
 
