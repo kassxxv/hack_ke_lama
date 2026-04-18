@@ -18,14 +18,13 @@ export async function GET() {
     if (!token) return NextResponse.json({ transactions: getMockTransactions(), source: 'mock' })
 
     const consentId = cookieStore.get('tb_consent_id')?.value
-    if (!consentId) return NextResponse.json({ transactions: getMockTransactions(), source: 'mock' })
 
-    const commonHeaders = {
+    const commonHeaders: Record<string, string> = {
       Authorization: `Bearer ${token}`,
-      'Consent-ID': consentId,
       'X-Request-ID': crypto.randomUUID(),
       'Content-Type': 'application/json',
     }
+    if (consentId) commonHeaders['Consent-ID'] = consentId
 
     // Fetch accounts list first to get account ID
     const accountsRes = await fetch(`${process.env.TB_ACCOUNTS_BASE}/accounts`, {
