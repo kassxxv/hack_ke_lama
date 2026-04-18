@@ -1,8 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { useRef } from 'react'
+import { motion, useMotionValue, animate } from 'framer-motion'
 
 interface SwipeLayoutProps {
   children: React.ReactNode
@@ -13,51 +12,36 @@ interface SwipeLayoutProps {
 export default function SwipeLayout({ children, onSwipeLeft, onSwipeRight }: SwipeLayoutProps) {
   const router = useRouter()
   const x = useMotionValue(0)
-  const opacity = useTransform(x, [-150, 0, 150], [0.7, 1, 0.7])
-  const constraintsRef = useRef(null)
 
   function handleDragEnd(_: unknown, info: { offset: { x: number; y: number }; velocity: { x: number; y: number } }) {
     const { offset, velocity } = info
 
-    // Only treat as horizontal swipe if x movement dominates y (not a scroll)
-    const isHorizontal = Math.abs(offset.x) > Math.abs(offset.y) * 2.5 && Math.abs(offset.x) > 30
+    // Only fire if horizontal movement clearly dominates vertical
+    const isHorizontalGesture = Math.abs(offset.x) > Math.abs(offset.y) * 1.5
 
-    if (!isHorizontal) {
-      animate(x, 0, { type: 'spring', stiffness: 400, damping: 40 })
-      return
-    }
+    const swipedLeft = isHorizontalGesture && (offset.x < -80 || velocity.x < -0.5)
+    const swipedRight = isHorizontalGesture && (offset.x > 80 || velocity.x > 0.5)
 
-    if (offset.x < -100 || velocity.x < -0.8) {
-      if (onSwipeLeft) {
-        animate(x, -400, { duration: 0.2 })
-        setTimeout(() => { router.push(onSwipeLeft); x.set(0) }, 180)
-      } else {
-        animate(x, 0, { type: 'spring', stiffness: 400, damping: 40 })
-      }
-    } else if (offset.x > 100 || velocity.x > 0.8) {
-      if (onSwipeRight) {
-        animate(x, 400, { duration: 0.2 })
-        setTimeout(() => { router.push(onSwipeRight); x.set(0) }, 180)
-      } else {
-        animate(x, 0, { type: 'spring', stiffness: 400, damping: 40 })
-      }
+    if (swipedLeft && onSwipeLeft) {
+      animate(x, -window.innerWidth, { duration: 0.2 })
+      setTimeout(() => { router.push(onSwipeLeft); x.set(0) }, 200)
+    } else if (swipedRight && onSwipeRight) {
+      animate(x, window.innerWidth, { duration: 0.2 })
+      setTimeout(() => { router.push(onSwipeRight); x.set(0) }, 200)
     } else {
-      animate(x, 0, { type: 'spring', stiffness: 400, damping: 40 })
+      animate(x, 0, { type: 'spring', stiffness: 300, damping: 30 })
     }
   }
 
   return (
-    <div ref={constraintsRef} className="overflow-hidden">
-      <motion.div
-        drag="x"
-        dragConstraints={constraintsRef}
-        dragElastic={0.08}
-        dragDirectionLock
-        onDragEnd={handleDragEnd}
-        style={{ x, opacity }}
-      >
-        {children}
-      </motion.div>
-    </div>
+    <motion.div
+      drag="x"
+      dragConstraints={{ left: -100, right: 100 }}
+      dragElastic={0.3}
+      onDragEnd={handleDragEnd}
+      style={{ x, touchAction: 'pan-y' }}
+    >
+      {children}
+    </motion.div>
   )
 }
