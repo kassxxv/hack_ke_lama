@@ -6,6 +6,7 @@ export async function GET() {
     response_type: 'code',
     client_id: process.env.TB_CLIENT_ID!,
     redirect_uri: process.env.TB_REDIRECT_URI!,
+    scope: 'AISP',
     state: 'hackathon2026',
   })
 
