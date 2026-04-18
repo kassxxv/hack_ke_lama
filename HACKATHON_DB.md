@@ -59,7 +59,24 @@ This section details specific sponsor technologies that must be integrated to qu
 - **Resources:** [MongoDB Atlas Documentation](https://www.mongodb.com/docs/atlas/).
 - **AI Strategy:** Use AI to design efficient NoSQL schemas and generate Mongoose/Driver aggregation pipelines.
 
-## 4. Team AI Strategy & Resources
+## 4. Innovation & Research Insights (2026 Trends)
+Our research identifies three core pillars for winning the Tatra Banka challenge:
+
+### 4.1 Emotional Design with TABI
+- **Mascot as Mediator:** TABI should handle debt reminders to remove social friction between friends.
+- **Narrative Guidance:** Instead of static charts, TABI provides "Financial Storytelling" (e.g., "The group spent 15% more on coffee this week!").
+- **Celebration UX:** Visual rewards (animations/badges) when a group settles up to motivate recurring use.
+
+### 4.2 Innovative UX Patterns
+- **Contextual Splitting:** Proactive split suggestions based on geolocation (e.g., sensing members are at the same restaurant).
+- **Micro-Settlements:** Automated clearing of small debts (<€5) to reduce mental load and keep the dashboard clean.
+- **Visual Debt Flow:** Node-based diagrams showing the flow of money within a group for absolute transparency.
+
+### 4.3 Technical Synergy
+- **ElevenLabs + TABI:** Give TABI a voice for narrative summaries and accessibility.
+- **DigitalOcean + Speed:** Use DO App Platform for instant "Live Demo" deployment of the prototype.
+
+## 5. Team AI Strategy & Resources
 
 _Leveraging Claude / Gemini / GPT for Development_
 
