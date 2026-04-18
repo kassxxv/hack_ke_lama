@@ -3,29 +3,27 @@
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
 import RoleBadge from '@/components/RoleBadge'
-import { fetchExpenses, settleDebt } from '@/lib/api'
+import { settleDebt } from '@/lib/api'
 import { calculateDebts } from '@/lib/debt'
 import { ChevronLeft, UserPlus, Volume2, Plus, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { use, useEffect, useState } from 'react'
+import { useStore } from '@/lib/store'
 import type { Group, Expense } from '@/types'
-
-const ME = 'u1'
 
 export default function GroupDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const { state } = useStore()
+  const ME = state.currentUser?.id ?? ''
   const [group, setGroup] = useState<Group | null>(null)
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
 
   async function load() {
     try {
-      const [gRes, exps] = await Promise.all([
-        fetch(`/api/groups/${id}`).then(r => r.json()),
-        fetchExpenses(id),
-      ])
-      setGroup(gRes.group ? { ...gRes.group, id: gRes.group._id ?? id, members: (gRes.group.members ?? []).map((m: { userId: string; name: string; phone: string; avatarColor: string; role: string }) => ({ user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor }, role: m.role, balance: 0 })) } : null)
-      setExpenses(exps)
+      const gRes = await fetch(`/api/groups/${id}`).then(r => r.json())
+      setGroup(gRes.group ?? null)
+      setExpenses(gRes.expenses ?? [])
     } catch { /* keep empty */ }
     finally { setLoading(false) }
   }

@@ -6,6 +6,7 @@ import { ChevronLeft, Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useStore } from "@/lib/store";
 import type { GroupType } from "@/types";
 
 const GROUP_TYPES: {
@@ -34,15 +35,10 @@ const GROUP_TYPES: {
   },
 ];
 
-const ME = {
-  id: "u1",
-  name: "Artur Ohorodnyk",
-  phone: "+421 900 111 222",
-  avatarColor: "#5B5EA6",
-};
-
 export default function NewGroupPage() {
   const router = useRouter();
+  const { state } = useStore();
+  const ME = state.currentUser;
   const [step, setStep] = useState<1 | 2>(1);
   const [groupType, setGroupType] = useState<GroupType | null>(null);
   const [name, setName] = useState("");
@@ -58,7 +54,7 @@ export default function NewGroupPage() {
   }
 
   async function handleCreate() {
-    if (!name.trim() || !groupType) return;
+    if (!name.trim() || !groupType || !ME) return;
     await createGroup({
       name: name.trim(),
       type: groupType,

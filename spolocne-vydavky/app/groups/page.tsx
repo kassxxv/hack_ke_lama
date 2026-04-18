@@ -3,24 +3,15 @@
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import GroupCard from '@/components/GroupCard'
-import { fetchGroups } from '@/lib/api'
 import { Plus, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
-import type { Group } from '@/types'
-
-const ME = 'u1'
+import { useStore } from '@/lib/store'
 
 export default function GroupsPage() {
-  const [groups, setGroups] = useState<Group[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchGroups()
-      .then(setGroups)
-      .catch(() => setGroups([]))
-      .finally(() => setLoading(false))
-  }, [])
+  const { state } = useStore()
+  const { groups, currentUser } = state
+  const loading = currentUser === null && groups.length === 0
+  const ME = currentUser?.id ?? ''
 
   const totalOwed = groups.reduce((sum, g) => {
     const me = g.members.find(m => m.user.id === ME)

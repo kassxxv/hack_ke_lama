@@ -2,6 +2,10 @@ import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import { ChevronRight, Mail, Settings, Share2, Download, Monitor, Clock, Repeat } from 'lucide-react'
 import Link from 'next/link'
+import { cookies } from 'next/headers'
+import { connectDB } from '@/lib/mongoose'
+import { GroupModel, ExpenseModel } from '@/models/Group'
+import { UserModel } from '@/models/User'
 
 const QUICK_ACTIONS = [
   { icon: Share2, label: 'Zdieľať IBAN' },
@@ -24,7 +28,46 @@ const TRANSACTIONS = [
   { id: 't5', merchant: 'Netflix', amount: -15.99, date: '1. apríl 2026', category: 'Predplatné', canSplit: false },
 ]
 
-export default function Home() {
+async function getTeaserData() {
+  try {
+    const cookieStore = await cookies()
+    const userId = cookieStore.get('sv_user_id')?.value
+    if (!userId) return { totalOwed: 0, groupCount: 0, userName: 'Filip' }
+
+    await connectDB()
+    const user = await UserModel.findById(userId).lean() as { name: string } | null
+    const groups = await GroupModel.find().lean() as { _id: { toString(): string }; members: { userId: string; role: string }[] }[]
+
+    let totalOwed = 0
+    let groupCount = 0
+    for (const g of groups) {
+      const isMember = g.members.some(m => m.userId === userId)
+      if (!isMember) continue
+      groupCount++
+      const expenses = await ExpenseModel.find({ groupId: g._id }).lean() as { paidBy: string; amount: number; splits: { userId: string; amount: number; settled: boolean }[] }[]
+      expenses.forEach(e => {
+        e.splits.forEach(s => {
+          if (s.settled) return
+          if (s.userId === userId && e.paidBy !== userId) totalOwed -= s.amount
+          else if (e.paidBy === userId && s.userId !== userId) totalOwed += s.amount
+        })
+      })
+    }
+
+    return { totalOwed, groupCount, userName: user?.name ?? 'Filip' }
+  } catch {
+    return { totalOwed: 0, groupCount: 0, userName: 'Filip' }
+  }
+}
+
+export default async function Home() {
+  const { totalOwed, groupCount, userName } = await getTeaserData()
+  const teaserLabel = totalOwed > 0
+    ? `Dlhujú ti celkom ${totalOwed.toFixed(2).replace('.', ',')} €`
+    : totalOwed < 0
+    ? `Dlhuješ celkom ${Math.abs(totalOwed).toFixed(2).replace('.', ',')} €`
+    : 'Všetko vyrovnané 🎉'
+
   return (
     <TBShell>
       <SwipeLayout onSwipeLeft="/groups">
@@ -38,7 +81,7 @@ export default function Home() {
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: '#0a84ff' }}>2</div>
             </div>
-            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>F</div>
+            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>{userName.charAt(0)}</div>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
               <Settings size={18} color="#ffffff" />
             </div>
@@ -47,7 +90,7 @@ export default function Home() {
           {/* Account identity */}
           <div className="text-center mb-1">
             <div className="flex items-center justify-center gap-1">
-              <span className="text-[17px] font-bold text-white">Filip</span>
+              <span className="text-[17px] font-bold text-white">{userName}</span>
               <ChevronRight size={16} color="#0a84ff" />
             </div>
             <div className="text-[12px]" style={{ color: '#8e8e93' }}>SK06 1100 0000 0029 3790 7102</div>
@@ -98,8 +141,8 @@ export default function Home() {
             <div className="rounded-2xl p-4 mb-5 flex items-center justify-between" style={{ background: '#1c1c1e', border: '1px solid #0a84ff33' }}>
               <div>
                 <div className="text-[11px] font-semibold mb-0.5 uppercase tracking-wide" style={{ color: '#0a84ff' }}>Spoločné výdavky</div>
-                <div className="text-[15px] font-semibold text-white">Dlhuješ celkom <span className="font-mono text-[#ff3b30]">120,00 €</span></div>
-                <div className="text-[12px] mt-0.5" style={{ color: '#8e8e93' }}>3 skupiny · potiahnuť doľava →</div>
+                <div className={`text-[15px] font-semibold text-white`}><span className={`font-mono ${totalOwed < 0 ? 'text-[#ff3b30]' : 'text-[#30d158]'}`}>{teaserLabel}</span></div>
+                <div className="text-[12px] mt-0.5" style={{ color: '#8e8e93' }}>{groupCount} {groupCount === 1 ? 'skupina' : groupCount < 5 ? 'skupiny' : 'skupín'} · potiahnuť doľava →</div>
               </div>
               <ChevronRight size={20} color="#0a84ff" />
             </div>
