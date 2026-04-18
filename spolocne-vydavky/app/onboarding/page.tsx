@@ -3,19 +3,17 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-function TBLogo() {
+function BackgroundLines() {
   return (
-    <svg width="140" height="100" viewBox="0 0 140 100" fill="none">
-      {/* Outer rectangle border */}
-      <rect x="1" y="1" width="98" height="68" stroke="white" strokeWidth="2.2" fill="none" />
-      {/* Triple diagonal slashes */}
-      <line x1="10" y1="69" x2="54" y2="1" stroke="white" strokeWidth="12" strokeLinecap="butt" />
-      <line x1="32" y1="69" x2="76" y2="1" stroke="white" strokeWidth="12" strokeLinecap="butt" />
-      <line x1="54" y1="69" x2="98" y2="1" stroke="white" strokeWidth="12" strokeLinecap="butt" />
-      {/* Black mask so TB text reads cleanly */}
-      <rect x="57" y="28" width="44" height="38" fill="black" />
-      {/* TB text */}
-      <text x="61" y="61" fontFamily="-apple-system, BlinkMacSystemFont, sans-serif" fontSize="30" fontWeight="800" fill="white">TB</text>
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox="0 0 390 500"
+      preserveAspectRatio="xMidYMid slice"
+      fill="none"
+    >
+      <line x1="-40" y1="500" x2="220" y2="-40" stroke="white" strokeWidth="52" strokeOpacity="0.04" />
+      <line x1="60" y1="500" x2="320" y2="-40" stroke="white" strokeWidth="52" strokeOpacity="0.04" />
+      <line x1="160" y1="500" x2="420" y2="-40" stroke="white" strokeWidth="52" strokeOpacity="0.04" />
     </svg>
   )
 }
@@ -49,28 +47,27 @@ export default function Onboarding() {
   }
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{ background: '#000000' }}
-    >
-      {/* Logo area — top half */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 pt-16 pb-8">
-        <TBLogo />
-        <div className="mt-6 text-center">
-          <div
-            className="text-[13px] font-bold tracking-[4px] uppercase mb-6"
-            style={{ color: '#ffffff' }}
-          >
-            TATRA BANKA
-          </div>
-          <div className="text-[13px]" style={{ color: '#ffffff', opacity: 0.45, letterSpacing: '1px' }}>
-            Spoločné výdavky
-          </div>
+    <div className="min-h-dvh flex flex-col relative overflow-hidden" style={{ background: '#000000' }}>
+
+      {/* Background diagonal lines — TB slash motif */}
+      <div className="absolute inset-0 flex items-center justify-center" style={{ top: '-10%', height: '65%' }}>
+        <BackgroundLines />
+      </div>
+
+      {/* Logo area */}
+      <div className="flex-1 flex flex-col items-center justify-center px-8 pt-16 pb-8 relative z-10">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/tb.png" alt="Tatra Banka" width={160} style={{ filter: 'brightness(0) invert(1)' }} />
+        <div className="mt-10 text-center">
+          <h1 className="text-[26px] font-bold text-white mb-2">Spoločné výdavky</h1>
+          <p className="text-[14px]" style={{ color: '#8e8e93' }}>
+            Rozdeľuj náklady jednoducho a prehľadne
+          </p>
         </div>
       </div>
 
-      {/* Auth area — bottom */}
-      <div className="px-6 pb-12 flex flex-col gap-4">
+      {/* Auth area */}
+      <div className="px-6 pb-12 flex flex-col gap-4 relative z-10">
         <div>
           <div className="text-[13px] mb-2 font-medium" style={{ color: '#8e8e93' }}>
             Telefónne číslo
@@ -83,15 +80,9 @@ export default function Onboarding() {
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
             autoComplete="tel"
             className="w-full px-4 py-4 rounded-2xl text-[17px] text-white outline-none"
-            style={{
-              background: '#111111',
-              border: '1px solid #2c2c2e',
-              caretColor: '#1762D9',
-            }}
+            style={{ background: '#111111', border: '1px solid #2c2c2e', caretColor: '#1762D9' }}
           />
-          {error && (
-            <p className="text-[13px] mt-2" style={{ color: '#ff3b30' }}>{error}</p>
-          )}
+          {error && <p className="text-[13px] mt-2" style={{ color: '#ff3b30' }}>{error}</p>}
         </div>
 
         <button
