@@ -32,10 +32,13 @@ export async function GET() {
       type: g.type,
       emoji: g.emoji,
       isTemporary: g.isTemporary,
-      members: (g.members as { userId: string; name: string; phone: string; avatarColor: string; role: string }[]).map(m => ({
+      potBalance: (g as typeof g & { potBalance?: number }).potBalance ?? 0,
+      potTarget: (g as typeof g & { potTarget?: number }).potTarget ?? null,
+      members: (g.members as { userId: string; name: string; phone: string; avatarColor: string; role: string; contributed?: number }[]).map(m => ({
         user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor },
         role: m.role,
         balance: balances[m.userId] ?? 0,
+        contributed: m.contributed ?? 0,
       })),
       totalOwed: Object.values(balances).filter(b => b > 0).reduce((s, b) => s + b, 0),
     }

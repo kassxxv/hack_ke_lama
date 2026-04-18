@@ -32,16 +32,20 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const rawExpenses = await ExpenseModel.find({ groupId: id }).lean() as { _id: { toString(): string }; groupId: unknown; amount: number; paidBy: string; splits: { userId: string; amount: number; settled: boolean }[]; merchant: string; date: string; isPersonal: boolean; category: string }[]
   const balances = calcBalances(group.members, rawExpenses)
 
+  const g = group as typeof group & { potBalance?: number; potTarget?: number }
   const result = {
     id: group._id.toString(),
     name: group.name,
     type: group.type,
     emoji: group.emoji,
     isTemporary: group.isTemporary,
+    potBalance: g.potBalance ?? 0,
+    potTarget: g.potTarget ?? null,
     members: group.members.map(m => ({
       user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor },
       role: m.role,
       balance: balances[m.userId] ?? 0,
+      contributed: (m as typeof m & { contributed?: number }).contributed ?? 0,
     })),
     totalOwed: Object.values(balances).filter(b => b > 0).reduce((s, b) => s + b, 0),
   }

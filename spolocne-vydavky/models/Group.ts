@@ -23,6 +23,15 @@ const MemberSchema = new Schema({
   phone: String,
   avatarColor: String,
   role: { type: String, enum: ['admin', 'member', 'junior'], default: 'member' },
+  // joint-account groups only
+  contributed: { type: Number, default: 0 },
+}, { _id: false })
+
+const ContributionSchema = new Schema({
+  userId: String,
+  amount: Number,
+  note: { type: String, default: '' },
+  date: { type: String, default: () => new Date().toISOString().slice(0, 10) },
 }, { _id: false })
 
 const GroupSchema = new Schema({
@@ -31,6 +40,10 @@ const GroupSchema = new Schema({
   emoji: { type: String, default: '👥' },
   isTemporary: { type: Boolean, default: false },
   members: [MemberSchema],
+  // joint-account groups only
+  potBalance: { type: Number, default: 0 },
+  potTarget: { type: Number, default: null },
+  contributions: { type: [ContributionSchema], default: [] },
 }, { timestamps: true })
 
 export const GroupModel = mongoose.models.Group ?? mongoose.model('Group', GroupSchema)

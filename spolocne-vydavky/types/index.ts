@@ -13,6 +13,7 @@ export type Member = {
   user: User
   role: Role
   balance: number
+  contributed?: number
 }
 
 export type Group = {
@@ -23,6 +24,8 @@ export type Group = {
   totalOwed: number
   isTemporary: boolean
   emoji: string
+  potBalance?: number
+  potTarget?: number
 }
 
 export type Split = {
