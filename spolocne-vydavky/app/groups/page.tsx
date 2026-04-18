@@ -8,7 +8,7 @@ import { calculateDebts } from '@/lib/debt'
 import { settleDebt } from '@/lib/api'
 import {
   ChevronDown, BarChart2, Users, Plus, ArrowLeftRight,
-  ArrowRight, Volume2, Download, Settings
+  ArrowRight, Volume2, Download, Settings, Camera
 } from 'lucide-react'
 import Link from 'next/link'
 import { useStore } from '@/lib/store'
@@ -92,7 +92,15 @@ export default function GroupsPage() {
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 4)
 
-  const quickActions: Array<{ label: string; icon: React.ElementType; href?: string; action?: () => void }> = [
+  const isPeers = selectedGroup?.type === 'peers'
+  const quickActions: Array<{ label: string; icon: React.ElementType; href?: string; action?: () => void }> = isPeers ? [
+    { label: 'Skenovať účet', icon: Camera, href: selectedGroup ? `/scan-bill?groupId=${selectedGroup.id}` : '/scan-bill' },
+    { label: 'Pridať výdavok', icon: Plus, href: selectedGroup ? `/add-expense?groupId=${selectedGroup.id}` : '/add-expense' },
+    { label: 'Správa výdavkov', icon: BarChart2, href: selectedGroup ? `/groups/${selectedGroup.id}/report` : '/groups' },
+    { label: 'Vyrovnať dlhy', icon: ArrowLeftRight, action: () => setToast('Vyrovnanie dlhov čoskoro') },
+    { label: 'Správa členov', icon: Users, action: () => setToast('Správa členov čoskoro') },
+    { label: 'Hlasové zhrnutie', icon: Volume2, action: () => setToast('Hlasové zhrnutie čoskoro') },
+  ] : [
     { label: 'Správa výdavkov', icon: BarChart2, href: selectedGroup ? `/groups/${selectedGroup.id}/report` : '/groups' },
     { label: 'Správa členov', icon: Users, action: () => setToast('Správa členov čoskoro') },
     { label: 'Pridať výdavok', icon: Plus, href: selectedGroup ? `/add-expense?groupId=${selectedGroup.id}` : '/add-expense' },
