@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
 import JointAccountView from '@/components/JointAccountView'
@@ -24,7 +24,6 @@ export default function GroupsPage() {
   const [loading, setLoading] = useState(true)
   const [groupLoading, setGroupLoading] = useState(false)
   const [toast, setToast] = useState('')
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetch('/api/groups')
@@ -53,15 +52,6 @@ export default function GroupsPage() {
     return () => clearTimeout(t)
   }, [toast])
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
 
   const me = selectedGroup?.members.find(m => m.user.id === ME)
   const balance = me?.balance ?? 0
@@ -159,7 +149,7 @@ export default function GroupsPage() {
         ) : (
           <>
             {/* Group Selector */}
-            <div ref={dropdownRef} className="relative mb-6">
+            <div className="relative mb-6">
               <button
                 onClick={() => setDropdownOpen(v => !v)}
                 className="flex items-center gap-2 w-full rounded-2xl px-4 py-3"
@@ -185,7 +175,7 @@ export default function GroupsPage() {
                 onClick={() => setDropdownOpen(false)}
               >
                 <div
-                  className="w-full max-w-[430px] rounded-t-3xl pb-8"
+                  className="w-full max-w-[430px] rounded-t-3xl pb-8 overflow-y-auto max-h-[70vh]"
                   style={{ background: '#1c1c1e' }}
                   onClick={e => e.stopPropagation()}
                 >
