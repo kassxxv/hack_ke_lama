@@ -11,7 +11,7 @@
 ## Project: Spoločné výdavky (Shared Expenses)
 **Challenge:** Tatra Banka — build a shared expenses feature natively integrated into their app.
 
-**Live deploy:** https://spolocne-vydavky.ondigitalocean.app (auto-deploys from `filip-def` branch)
+**Live deploy:** https://spolocne-vydavky-ppypl.ondigitalocean.app (auto-deploys from `filip-def` branch)
 **Repo:** https://github.com/kassxxv/hack_ke_lama · branch `filip-def`
 **App folder:** `/spolocne-vydavky`
 
