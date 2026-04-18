@@ -1,7 +1,6 @@
 'use client'
 
 import { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react'
-import { MOCK_GROUPS, MOCK_EXPENSES } from './mock-data'
 import type { Group, Expense } from '@/types'
 
 type State = { groups: Group[]; expenses: Expense[] }
@@ -12,45 +11,15 @@ type Action =
   | { type: 'SETTLE'; groupId: string; fromId: string; toId: string; amount: number }
   | { type: 'HYDRATE'; state: State }
 
-function recalcBalances(groups: Group[], expenses: Expense[]): Group[] {
-  return groups.map(group => {
-    const groupExpenses = expenses.filter(e => e.groupId === group.id)
-    const balanceMap: Record<string, number> = {}
-    group.members.forEach(m => { balanceMap[m.user.id] = 0 })
-
-    groupExpenses.forEach(expense => {
-      expense.splits.forEach(split => {
-        if (!split.settled) {
-          if (split.userId === expense.paidBy) {
-            balanceMap[expense.paidBy] = (balanceMap[expense.paidBy] ?? 0) + (expense.amount - split.amount)
-          } else {
-            balanceMap[split.userId] = (balanceMap[split.userId] ?? 0) - split.amount
-            balanceMap[expense.paidBy] = (balanceMap[expense.paidBy] ?? 0) + split.amount
-          }
-        }
-      })
-    })
-
-    return { ...group, members: group.members.map(m => ({ ...m, balance: balanceMap[m.user.id] ?? 0 })) }
-  })
-}
-
-const defaultState: State = {
-  groups: recalcBalances(MOCK_GROUPS, MOCK_EXPENSES),
-  expenses: MOCK_EXPENSES,
-}
-
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'HYDRATE':
       return action.state
-    case 'ADD_GROUP': {
-      const updated = [...state.groups, action.group]
-      return { ...state, groups: recalcBalances(updated, state.expenses) }
-    }
+    case 'ADD_GROUP':
+      return { ...state, groups: [...state.groups, action.group] }
     case 'ADD_EXPENSE': {
       const updated = [...state.expenses, action.expense]
-      return { groups: recalcBalances(state.groups, updated), expenses: updated }
+      return { ...state, expenses: updated }
     }
     case 'SETTLE': {
       const updated = state.expenses.map(e => {
@@ -63,7 +32,7 @@ function reducer(state: State, action: Action): State {
           }),
         }
       })
-      return { groups: recalcBalances(state.groups, updated), expenses: updated }
+      return { ...state, expenses: updated }
     }
     default:
       return state
@@ -72,31 +41,15 @@ function reducer(state: State, action: Action): State {
 
 const StoreContext = createContext<{ state: State; dispatch: React.Dispatch<Action> } | null>(null)
 
-const STORAGE_KEY = 'sv_store_v1'
-
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, defaultState)
+  const [state, dispatch] = useReducer(reducer, { groups: [], expenses: [] })
 
-  // Hydrate from localStorage on first mount
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        const parsed = JSON.parse(saved) as State
-        // Only hydrate if user has added custom data (more groups than default)
-        if (parsed.groups?.length > 0) {
-          dispatch({ type: 'HYDRATE', state: parsed })
-        }
-      }
-    } catch { /* ignore parse errors */ }
+    fetch('/api/groups')
+      .then(r => r.json())
+      .then((groups: Group[]) => dispatch({ type: 'HYDRATE', state: { groups, expenses: [] } }))
+      .catch(() => {})
   }, [])
-
-  // Persist on every change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
-    } catch { /* ignore storage errors */ }
-  }, [state])
 
   return <StoreContext.Provider value={{ state, dispatch }}>{children}</StoreContext.Provider>
 }

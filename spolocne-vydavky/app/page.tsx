@@ -1,8 +1,7 @@
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
-import { ChevronRight, Mail, Settings, Share2, Download, Monitor, Clock, Repeat, Link2 } from 'lucide-react'
+import { ChevronRight, Mail, Settings, Share2, Download, Monitor, Clock, Repeat } from 'lucide-react'
 import Link from 'next/link'
-import { cookies } from 'next/headers'
 
 const QUICK_ACTIONS = [
   { icon: Share2, label: 'Zdieľať IBAN' },
@@ -17,40 +16,15 @@ const CATEGORY_EMOJI: Record<string, string> = {
   Bývanie: '🏠', Služby: '📡', Predplatné: '📺', Iné: '💳',
 }
 
-type TxItem = { id: string; merchant: string; amount: number; date: string; category: string; canSplit: boolean }
+const TRANSACTIONS = [
+  { id: 't1', merchant: 'KAUFLAND Poprad', amount: -12.33, date: '18. apríl 2026', category: 'Potraviny', canSplit: true },
+  { id: 't2', merchant: 'Shell — Ružomberok', amount: -48.00, date: '17. apríl 2026', category: 'Doprava', canSplit: true },
+  { id: 't3', merchant: 'Tatranská Lomnica', amount: -89.00, date: '16. apríl 2026', category: 'Zábava', canSplit: true },
+  { id: 't4', merchant: 'Lidl Košice', amount: -23.45, date: '15. apríl 2026', category: 'Potraviny', canSplit: true },
+  { id: 't5', merchant: 'Netflix', amount: -15.99, date: '1. apríl 2026', category: 'Predplatné', canSplit: false },
+]
 
-async function getTransactions(): Promise<{ items: TxItem[]; live: boolean }> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get('tb_token')?.value
-
-  if (!token) return { items: getMock(), live: false }
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'}/api/tb/transactions`, {
-      headers: { Cookie: `tb_token=${token}` },
-      cache: 'no-store',
-    })
-    if (!res.ok) return { items: getMock(), live: false }
-    const data = await res.json()
-    return { items: data.transactions, live: data.source === 'live' }
-  } catch {
-    return { items: getMock(), live: false }
-  }
-}
-
-function getMock(): TxItem[] {
-  return [
-    { id: 't1', merchant: 'KAUFLAND Poprad', amount: -12.33, date: '18. apríl 2026', category: 'Potraviny', canSplit: true },
-    { id: 't2', merchant: 'Shell — Ružomberok', amount: -48.00, date: '17. apríl 2026', category: 'Doprava', canSplit: true },
-    { id: 't3', merchant: 'Tatranská Lomnica', amount: -89.00, date: '16. apríl 2026', category: 'Zábava', canSplit: true },
-    { id: 't4', merchant: 'Lidl Košice', amount: -23.45, date: '15. apríl 2026', category: 'Potraviny', canSplit: true },
-    { id: 't5', merchant: 'Netflix', amount: -15.99, date: '1. apríl 2026', category: 'Predplatné', canSplit: true },
-  ]
-}
-
-export default async function Home() {
-  const { items: transactions, live } = await getTransactions()
-
+export default function Home() {
   return (
     <TBShell>
       <SwipeLayout onSwipeLeft="/groups">
@@ -64,7 +38,7 @@ export default async function Home() {
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: '#0a84ff' }}>2</div>
             </div>
-            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>M</div>
+            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>F</div>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
               <Settings size={18} color="#ffffff" />
             </div>
@@ -73,7 +47,7 @@ export default async function Home() {
           {/* Account identity */}
           <div className="text-center mb-1">
             <div className="flex items-center justify-center gap-1">
-              <span className="text-[17px] font-bold text-white">Marek Novák</span>
+              <span className="text-[17px] font-bold text-white">Filip</span>
               <ChevronRight size={16} color="#0a84ff" />
             </div>
             <div className="text-[12px]" style={{ color: '#8e8e93' }}>SK06 1100 0000 0029 3790 7102</div>
@@ -119,28 +93,6 @@ export default async function Home() {
             ))}
           </div>
 
-          {/* TB Connect banner — shown when not connected */}
-          {!live && (
-            <a href="/api/tb/auth">
-              <div className="rounded-2xl p-4 mb-4 flex items-center gap-3" style={{ background: '#1c1c1e', border: '1px solid #38383a' }}>
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#1c3a5e' }}>
-                  <Link2 size={18} color="#0a84ff" />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[14px] font-semibold text-white">Pripojiť Tatra Banku</div>
-                  <div className="text-[12px]" style={{ color: '#8e8e93' }}>Zobraziť skutočné pohyby z účtu</div>
-                </div>
-                <ChevronRight size={16} color="#0a84ff" />
-              </div>
-            </a>
-          )}
-          {live && (
-            <div className="rounded-xl px-3 py-2 mb-4 flex items-center gap-2" style={{ background: '#1a3a1e' }}>
-              <div className="w-2 h-2 rounded-full bg-[#30d158]" />
-              <span className="text-[12px] font-medium text-[#30d158]">Tatra Banka prepojená · živé dáta</span>
-            </div>
-          )}
-
           {/* Groups teaser */}
           <Link href="/groups">
             <div className="rounded-2xl p-4 mb-5 flex items-center justify-between" style={{ background: '#1c1c1e', border: '1px solid #0a84ff33' }}>
@@ -160,11 +112,11 @@ export default async function Home() {
           </div>
 
           <div>
-            {transactions.map((tx, i) => (
+            {TRANSACTIONS.map((tx, i) => (
               <Link key={tx.id} href={`/transaction/${tx.id}`}>
                 <div
                   className="flex items-center gap-3 py-3"
-                  style={{ borderBottom: i < transactions.length - 1 ? '0.5px solid #38383a' : 'none' }}
+                  style={{ borderBottom: i < TRANSACTIONS.length - 1 ? '0.5px solid #38383a' : 'none' }}
                 >
                   <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: tx.amount < 0 ? '#3a1c1c' : '#1a3a1e' }}>
                     {CATEGORY_EMOJI[tx.category] ?? '💳'}
