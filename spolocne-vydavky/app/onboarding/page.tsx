@@ -57,7 +57,7 @@ export default function Onboarding() {
       {/* Logo area */}
       <div className="flex-1 flex flex-col items-center justify-center px-8 pt-16 pb-8 relative z-10">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/tb.png" alt="Tatra Banka" width={160} style={{ filter: 'brightness(0) invert(1)' }} />
+        <img src="/tb.png" alt="Tatra Banka" width={160} style={{ filter: 'invert(1) grayscale(1) brightness(5)' }} />
         <div className="mt-10 text-center">
           <h1 className="text-[26px] font-bold text-white mb-2">Spoločné výdavky</h1>
           <p className="text-[14px]" style={{ color: '#8e8e93' }}>
