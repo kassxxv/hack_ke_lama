@@ -1,97 +1,148 @@
-# HackKosice 2026 Team Database
+# HackKosice 2026 — Team Brief
 
-## 1. Event Overview: HackKosice 2026
-
-- **Dates:** April 18–19, 2026.
-- **Location:** Košice, Slovakia (Physical attendance required).
-- **Format:** 24-hour hackathon.
-- **Language:** English (all workshops, demos, presentations).
-- **Team Size:** 2–4 people (exactly).
-- **Submission Deadline:** Sunday, April 19, 2026, at Noon.
-- **Judging Criteria:** Originality, Impact, Technical Complexity, Presentation.
-
-## 2. Major Sponsors & Potential Tracks
-
-_To be updated during the Opening Ceremony (Saturday, 10:00 AM)._
-
-- **Platinum:** Investech
-- **Gold:** AT&T, Tatra Banka, JetBrains
-- **Silver:** IBM
-- **Bronze:** Kaya VC
-- **Past Themes:** Data Analytics (Visma), High-quality Networking/Engineering (Bloomreach).
-
-## 3. MLH Prize Categories & Requirements
-
-This section details specific sponsor technologies that must be integrated to qualify for extra prizes.
-
-### 3.1 Best Use of Gemini API (Google Cloud)
-
-- **Requirement:** Build an AI-powered application using Google’s Gemini API (e.g., chatbots, content generation, summarizers).
-- **Prize:** Google Swag Kits.
-- **Resources:** [Google AI Studio / Gemini Documentation](https://ai.google.dev/).
-- **AI Strategy:** Use Gemini 1.5 Pro for multi-modal tasks (analyzing images/video) or large context reasoning.
-
-### 3.2 Best Use of ElevenLabs (AI Audio)
-
-- **Requirement:** Integrate natural-sounding AI voices from ElevenLabs into your project.
-- **Prize:** Wireless Earbuds.
-- **Resources:** [ElevenLabs API Documentation](https://elevenlabs.io/api).
-- **AI Strategy:** Use Claude/GPT to write Python/JS wrappers for the ElevenLabs API and generate expressive speech scripts.
-
-### 3.3 Best Use of Solana (Blockchain/Web3)
-
-- **Requirement:** Build fast, scalable decentralized apps (games, DEX, NFT, supply chain) on the Solana network.
-- **Prize:** Ledger Nano S Plus.
-- **Resources:** [Solana Documentation](https://docs.solana.com/).
-- **AI Strategy:** Use GPT-4o to generate Anchor/Rust smart contract boilerplate and Solana Web3.js integration code.
-
-### 3.4 Best Use of DigitalOcean (Cloud/Hosting)
-
-- **Requirement:** Deploy your application using DigitalOcean’s cloud platform (App Platform, Droplets) or Gradient™ AI.
-- **Prize:** Retro Wireless Mouse.
-- **Resources:** [DigitalOcean Documentation](https://docs.digitalocean.com/).
-- **AI Strategy:** Use AI to generate optimized Dockerfiles and App Spec YAML files for DigitalOcean deployment.
-
-### 3.5 Best Use of MongoDB Atlas (Database)
-
-- **Requirement:** Use MongoDB Atlas (cloud database) for data storage and management.
-- **Prize:** M5Stack IoT Kit.
-- **Resources:** [MongoDB Atlas Documentation](https://www.mongodb.com/docs/atlas/).
-- **AI Strategy:** Use AI to design efficient NoSQL schemas and generate Mongoose/Driver aggregation pipelines.
-
-## 4. Innovation & Research Insights (2026 Trends)
-Our research identifies three core pillars for winning the Tatra Banka challenge:
-
-### 4.1 Emotional Design with TABI
-- **Mascot as Mediator:** TABI should handle debt reminders to remove social friction between friends.
-- **Narrative Guidance:** Instead of static charts, TABI provides "Financial Storytelling" (e.g., "The group spent 15% more on coffee this week!").
-- **Celebration UX:** Visual rewards (animations/badges) when a group settles up to motivate recurring use.
-
-### 4.2 Innovative UX Patterns
-- **Contextual Splitting:** Proactive split suggestions based on geolocation (e.g., sensing members are at the same restaurant).
-- **Micro-Settlements:** Automated clearing of small debts (<€5) to reduce mental load and keep the dashboard clean.
-- **Visual Debt Flow:** Node-based diagrams showing the flow of money within a group for absolute transparency.
-
-### 4.3 Technical Synergy
-- **ElevenLabs + TABI:** Give TABI a voice for narrative summaries and accessibility.
-- **DigitalOcean + Speed:** Use DO App Platform for instant "Live Demo" deployment of the prototype.
-
-## 5. Team AI Strategy & Resources
-
-_Leveraging Claude / Gemini / GPT for Development_
-
-| Resource   | Primary Strength           | Recommended Use Case                                                  |
-| :--------- | :------------------------- | :-------------------------------------------------------------------- |
-| **Claude** | Coding & UI/UX             | Frontend development, complex refactoring, and CSS/Artifacts.         |
-| **Gemini** | Long Context & Multi-modal | Analyzing large codebases (2M tokens) or processing video/audio data. |
-| **GPT**    | Versatility & Scripting    | Fast prototyping, Python scripts, and general brainstorming.          |
-
-### Prize-Winning Tactics:
-
-1. **API First:** Start by exploring the API docs of the sponsor (linked above).
-2. **Contextual Awareness:** Feed the sponsor docs into Gemini 1.5 Pro for deep understanding of their specific library before coding.
-3. **Deployment Early:** Use DigitalOcean to host a landing page/MVP in the first 4 hours to ensure the deployment prize is reachable.
+## Event
+- **Dates:** April 18–19, 2026 · Košice, Slovakia
+- **Format:** 24-hour hackathon
+- **Deadline:** Sunday April 19, noon
+- **Judging:** Originality, Impact, Technical Complexity, Presentation
 
 ---
 
-_Last Updated: 2026-04-18_
+## Project: Spoločné výdavky (Shared Expenses)
+**Challenge:** Tatra Banka — build a shared expenses feature natively integrated into their app.
+
+**Live deploy:** https://spolocne-vydavky.ondigitalocean.app (auto-deploys from `filip-def` branch)
+**Repo:** https://github.com/kassxxv/hack_ke_lama · branch `filip-def`
+**App folder:** `/spolocne-vydavky`
+
+---
+
+## What's Built (Frontend — Filip)
+Next.js 14 PWA with Tatra Banka UI clone. Already deployed on DigitalOcean.
+
+### Screens done
+| Route | Screen |
+|---|---|
+| `/` | TB Home — balance, transactions, swipe left → groups |
+| `/groups` | Groups list with balances, swipe right → home |
+| `/groups/[id]` | Group detail — members, "Kto komu dlhuje", expenses |
+| `/groups/new` | Create group — type picker + invite by name/phone |
+| `/add-expense` | Add expense — amount, who paid, split type, members |
+| `/transaction/[id]` | TB Transaction detail + "Rozdeliť výdavok" CTA |
+| `/api/tb/auth` | TB OAuth2 redirect (AISP) |
+| `/api/tb/callback` | TB OAuth2 token exchange |
+| `/api/tb/transactions` | Fetch TB transactions (returns mock if no token) |
+
+### State
+Currently uses **in-memory React Context + localStorage**. Ready to swap to real API calls — see contracts below.
+
+### Tech stack
+- Next.js 16 · TypeScript · Tailwind CSS · shadcn/ui · Framer Motion
+- Deployed: DigitalOcean App Platform (Dockerfile in `/spolocne-vydavky/Dockerfile`)
+
+---
+
+## What Backend Needs to Build
+
+### Priority 1 — Core API (needed for demo)
+
+#### Auth
+```
+POST /api/auth/login     { phone: string } → { token: string, user: User }
+GET  /api/auth/me        → User
+```
+
+#### Groups
+```
+GET    /api/groups              → Group[]
+POST   /api/groups              { name, type, emoji, isTemporary } → Group
+GET    /api/groups/:id          → Group (with members + balances)
+POST   /api/groups/:id/members  { phone: string } → Member
+```
+
+#### Expenses
+```
+GET    /api/groups/:id/expenses → Expense[]
+POST   /api/groups/:id/expenses { amount, paidBy, splits, merchant, category, date } → Expense
+POST   /api/expenses/:id/settle { fromId, toId } → Expense
+```
+
+#### Transactions (TB API proxy)
+```
+GET /api/transactions  → Transaction[]   (proxies TB sandbox AISP or returns mock)
+```
+
+### Priority 2 — TB API (for Tatra Banka prize)
+TB developer portal: https://developer.tatrabanka.sk
+- App registered: Client ID `l70e6799a14d3c4ad1b3f2301615e7573a`
+- APIs subscribed: TatraPayPlus v1.5.2 + PSD2 BGS TB Accounts API v1.1
+- OAuth2 flow: authorization_code, scope=AISP
+- Token URL: `https://api.tatrabanka.sk/tatrapayplus/sandbox/auth/oauth/v2/token`
+- **Need from portal Wiki:** exact authorize URL + accounts/transactions endpoint URL
+- Frontend OAuth callback is at `/api/tb/callback` (already built)
+
+### Priority 3 — MongoDB Atlas (for MongoDB prize)
+Collections needed:
+```
+users      { _id, name, phone, avatarColor, createdAt }
+groups     { _id, name, type, emoji, isTemporary, memberIds[], createdAt }
+members    { groupId, userId, role, balance }
+expenses   { _id, groupId, amount, paidBy, splits[], merchant, category, date, isPersonal }
+splits     { userId, amount, settled }
+```
+
+---
+
+## Data Types Contract
+Full types in `/spolocne-vydavky/types/index.ts`. Key shapes:
+
+```typescript
+type GroupType = 'family' | 'roommates' | 'peers'
+type Role = 'admin' | 'member' | 'junior'
+type SplitType = 'equal' | 'amount' | 'percent'
+
+type User    = { id: string; name: string; phone: string; avatarColor: string }
+type Member  = { user: User; role: Role; balance: number }
+type Group   = { id: string; name: string; type: GroupType; members: Member[]; totalOwed: number; isTemporary: boolean; emoji: string }
+type Expense = { id: string; groupId: string; amount: number; paidBy: string; splits: Split[]; merchant: string; date: string; isPersonal: boolean; category: string }
+type Split   = { userId: string; amount: number; settled: boolean }
+```
+
+---
+
+## Prize Tracks Status
+| Prize | Status | What's needed |
+|---|---|---|
+| **DigitalOcean** ✅ | Deployed at spolocne-vydavky.ondigitalocean.app | Done |
+| **MongoDB Atlas** ⏳ | Backend needs to connect Atlas | Backend task |
+| **ElevenLabs** ⏳ | Voice button exists in Group Detail UI | Needs ElevenLabs SDK call |
+| **Tatra Banka** ⏳ | OAuth scaffolded, TB API endpoints need correct URLs | Both |
+
+---
+
+## How to Run Locally
+```bash
+cd spolocne-vydavky
+npm install
+npm run dev   # → http://localhost:3000
+```
+
+Env vars needed (create `.env.local`):
+```
+TB_CLIENT_ID=l70e6799a14d3c4ad1b3f2301615e7573a
+TB_CLIENT_SECRET=1a0f7ebde40d4fb3b90ea72734ee8fbe
+TB_REDIRECT_URI=http://localhost:3000/api/tb/callback
+TB_TOKEN_URL=https://api.tatrabanka.sk/tatrapayplus/sandbox/auth/oauth/v2/token
+TB_ACCOUNTS_BASE=https://api.tatrabanka.sk/premium/sandbox/v1
+```
+
+---
+
+## Remaining Frontend Tasks
+1. **ElevenLabs voice** — "Hlasové zhrnutie" button in Group Detail (`/app/groups/[id]/page.tsx:50`) needs SDK call
+2. **Swap mock store for real API** — replace `useStore()` calls with `fetch('/api/...')` once backend is ready
+3. **Onboarding** — 3-screen TABI mascot flow (`/app/onboarding`)
+
+---
+
+_Last updated: 2026-04-18 · Branch: filip-def_
