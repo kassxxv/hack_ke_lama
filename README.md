@@ -1,86 +1,49 @@
 # Spoločné výdavky
 
-Shared expenses app built for the **Tatra Banka challenge** at HackKosice 2026.
+> "Who paid for dinner? How much do I owe? Can you just send it to me?"
+
+We've all been there. Splitting bills with friends, family, or roommates is awkward — you lose track, someone always forgets, and chasing people for money is uncomfortable.
+
+**Spoločné výdavky** solves this by bringing shared expenses natively into your bank app. No switching between Splitwise and your bank. No manual transfers. Just — you paid, we split, done.
 
 **Live:** https://spolocne-vydavky-ppypl.ondigitalocean.app
 **Demo login:** `+421 900 000 001`
 
 ---
 
-## Stack
+## The Problem
 
-- **Next.js 16** (App Router, TypeScript)
-- **Tailwind CSS** + shadcn/ui
-- **MongoDB Atlas** (Mongoose)
-- **DigitalOcean App Platform** (auto-deploys from `filip-def`)
+When you go on a trip with friends, someone pays for the hotel, someone for petrol, someone for food. By the end of the week nobody knows who owes what. You either spend an hour with a spreadsheet, or just let it go and feel weird about it.
 
----
+The same happens every month with roommates — rent, electricity, internet. And in families — groceries, school trips, shared subscriptions.
 
-## Running Locally
-
-```bash
-cd spolocne-vydavky
-npm install
-npm run dev        # → http://localhost:3000
-```
-
-Create `.env.local`:
-```
-MONGODB_URI=your_atlas_uri
-```
-
-Seed the DB (run once):
-```
-GET http://localhost:3000/api/seed
-```
+Banks see all your transactions. They know what you spend. But they don't help you split it.
 
 ---
 
-## What's Built
+## Our Solution
 
-| Route | Screen |
-|---|---|
-| `/onboarding` | TABI mascot welcome + phone login |
-| `/` | Home dashboard — balance, transactions, groups teaser |
-| `/groups` | Groups list with total balance |
-| `/groups/[id]` | Group detail — members, debts, expenses |
-| `/groups/new` | Create group (family / roommates / trip) |
-| `/add-expense` | Add expense with equal / amount / percent split |
-| `/transaction/[id]` | Transaction detail with split CTA |
+A shared expenses feature that lives inside the Tatra Banka app — same design, same feel, zero friction.
 
-### API Routes
+- Create a group for your apartment, family, or a trip
+- Add an expense — the app calculates who owes what
+- See a clear summary: "Martin owes you €48, you owe Jana €12"
+- Settle up in one tap
 
-```
-POST /api/auth/login           { phone } → sets sv_user_id cookie
-GET  /api/auth/me              → current user
-GET  /api/groups               → all groups with computed balances
-POST /api/groups               → create group
-GET  /api/groups/[id]          → group + expenses + balances
-GET  /api/groups/[id]/expenses → expense list
-POST /api/groups/[id]/expenses → add expense
-POST /api/groups/[id]/settle   → settle debt between two users
-GET  /api/seed                 → reset + seed demo data
-```
+The debt algorithm automatically minimises the number of transfers needed — if three people owe each other money, it figures out the shortest path to settle everything.
 
 ---
 
-## What's Not There Yet
+## What We're Thinking About Next
 
-- **In-app payment** — settling a debt via real Tatra Banka PIS transfer (PSD2 OAuth scaffolded, sandbox auth wasn't resolving in time)
-- **Bill scanning** — OCR receipt → line-item split
-- **Voice summary** — ElevenLabs "You owe X €Y for Z"
-- **Push notifications** — debt reminders
+This is what we'd build with more time:
+
+- **Pay directly from the app** — instead of just tracking the debt, trigger a real Tatra Banka transfer to settle it. The infrastructure is already there (PSD2), it just needs the final connection.
+- **Scan a receipt** — point your camera at a bill, the app reads the items, you drag them to the people who ordered them
+- **Voice summary** — one tap and TABI reads out: *"You owe Martin 48 euros for petrol, and Jana owes you 85 euros from the ski trip"*
+- **Reminders** — a gentle nudge when someone hasn't settled for a while, without you having to say anything
 
 ---
 
-## Repo Structure
-
-```
-hack_ke_lama/
-└── spolocne-vydavky/       ← Next.js app
-    ├── app/                ← Pages + API routes
-    ├── components/         ← TBShell, GroupCard, ExpenseRow, etc.
-    ├── lib/                ← store, mongoose, debt algorithm
-    ├── models/             ← User, Group, Expense (Mongoose)
-    └── types/              ← Shared TypeScript types
-```
+## Built at HackKosice 2026
+24 hours · Tatra Banka Challenge · Košice, Slovakia
