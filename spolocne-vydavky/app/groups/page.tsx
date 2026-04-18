@@ -152,15 +152,14 @@ export default function GroupsPage() {
             <div className="relative mb-6">
               <button
                 onClick={() => setDropdownOpen(v => !v)}
-                className="flex items-center gap-2 w-full rounded-2xl px-4 py-3"
-                style={{ background: '#1c1c1e', border: '0.5px solid #38383a' }}
+                className="flex items-center justify-center gap-1.5 w-full py-1"
               >
-                <span className="text-[17px] font-semibold text-white flex-1 text-left">
+                <span className="text-[14px] font-medium" style={{ color: '#8e8e93' }}>
                   {selectedGroup?.emoji} {selectedGroup?.name}
                 </span>
                 <ChevronDown
-                  size={17}
-                  color="#0a84ff"
+                  size={14}
+                  color="#8e8e93"
                   strokeWidth={2.2}
                   style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
                 />
