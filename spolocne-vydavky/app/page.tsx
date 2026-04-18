@@ -70,11 +70,8 @@ export default async function Home() {
 
           {/* Top bar — avatar absolutely centered */}
           <div className="relative flex items-center mb-5" style={{ height: '36px' }}>
-            <div className="relative">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
-                <Mail size={18} color="#ffffff" />
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: '#0a84ff' }}>2</div>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
+              <Mail size={18} color="#ffffff" />
             </div>
             <div className="absolute left-1/2 -translate-x-1/2 w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>
               {userName.charAt(0)}
