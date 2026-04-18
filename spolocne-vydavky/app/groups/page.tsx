@@ -6,12 +6,21 @@ import GroupCard from '@/components/GroupCard'
 import { Plus, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useStore } from '@/lib/store'
+import { useEffect, useState } from 'react'
+import type { Group } from '@/types'
 
 export default function GroupsPage() {
   const { state } = useStore()
-  const { groups, currentUser } = state
-  const loading = currentUser === null && groups.length === 0
-  const ME = currentUser?.id ?? ''
+  const ME = state.currentUser?.id ?? ''
+  const [groups, setGroups] = useState<Group[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/groups')
+      .then(r => r.json())
+      .then((data: Group[]) => { setGroups(data); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
 
   const totalOwed = groups.reduce((sum, g) => {
     const me = g.members.find(m => m.user.id === ME)
