@@ -1,7 +1,7 @@
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import QuickActions from '@/components/QuickActions'
-import { Mail, Settings } from 'lucide-react'
+import { Mail, Settings, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { connectDB } from '@/lib/mongoose'
