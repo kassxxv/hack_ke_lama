@@ -17,19 +17,24 @@ export async function GET() {
     const token = cookieStore.get('tb_token')?.value
     if (!token) return NextResponse.json({ transactions: getMockTransactions(), source: 'mock' })
 
+    const consentId = cookieStore.get('tb_consent_id')?.value
+    if (!consentId) return NextResponse.json({ transactions: getMockTransactions(), source: 'mock' })
+
+    const commonHeaders = {
+      Authorization: `Bearer ${token}`,
+      'Consent-ID': consentId,
+      'X-Request-ID': crypto.randomUUID(),
+      'Content-Type': 'application/json',
+    }
+
     // Fetch accounts list first to get account ID
     const accountsRes = await fetch(`${process.env.TB_ACCOUNTS_BASE}/accounts`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'X-Request-ID': crypto.randomUUID(),
-        'Content-Type': 'application/json',
-      },
+      headers: commonHeaders,
     })
 
     if (!accountsRes.ok) {
       const err = await accountsRes.text()
       console.error('TB accounts error:', err)
-      // Fall back to mock data if API not available yet
       return NextResponse.json({ transactions: getMockTransactions(), source: 'mock' })
     }
 
@@ -43,11 +48,7 @@ export async function GET() {
     const txRes = await fetch(
       `${process.env.TB_ACCOUNTS_BASE}/accounts/${accountId}/transactions?bookingStatus=booked&dateFrom=2026-04-01`,
       {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'X-Request-ID': crypto.randomUUID(),
-          'Content-Type': 'application/json',
-        },
+        headers: { ...commonHeaders, 'X-Request-ID': crypto.randomUUID() },
       }
     )
 
