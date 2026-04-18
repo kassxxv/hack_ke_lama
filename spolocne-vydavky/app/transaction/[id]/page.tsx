@@ -1,11 +1,18 @@
 import TBShell from '@/components/TBShell'
-import { MOCK_TRANSACTIONS } from '@/lib/mock-data'
 import { ChevronLeft, Split, FileText, Cloud } from 'lucide-react'
 import Link from 'next/link'
 
+const TRANSACTIONS = [
+  { id: 't1', merchant: 'KAUFLAND Poprad', amount: -12.33, date: '18. apríl 2026', category: 'Potraviny', canSplit: true },
+  { id: 't2', merchant: 'Shell — Ružomberok', amount: -48.00, date: '17. apríl 2026', category: 'Doprava', canSplit: true },
+  { id: 't3', merchant: 'Tatranská Lomnica', amount: -89.00, date: '16. apríl 2026', category: 'Zábava', canSplit: true },
+  { id: 't4', merchant: 'Lidl Košice', amount: -23.45, date: '15. apríl 2026', category: 'Potraviny', canSplit: true },
+  { id: 't5', merchant: 'Netflix', amount: -15.99, date: '1. apríl 2026', category: 'Predplatné', canSplit: false },
+]
+
 export default async function TransactionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const tx = MOCK_TRANSACTIONS.find(t => t.id === id) ?? MOCK_TRANSACTIONS[0]
+  const tx = TRANSACTIONS.find(t => t.id === id) ?? TRANSACTIONS[0]
 
   return (
     <TBShell>
