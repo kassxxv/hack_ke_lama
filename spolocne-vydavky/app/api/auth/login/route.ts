@@ -7,7 +7,9 @@ export async function POST(req: NextRequest) {
   const { phone } = await req.json() as { phone: string }
   await connectDB()
 
-  const user = await UserModel.findOne({ phone: phone.trim() }).lean() as { _id: { toString(): string }; name: string; phone: string; avatarColor: string } | null
+  const normalized = phone.trim().replace(/\s+/g, '')
+  const pattern = normalized.split('').map(c => c === '+' ? '\\+' : c).join('\\s*')
+  const user = await UserModel.findOne({ phone: { $regex: new RegExp('^' + pattern + '$') } }).lean() as { _id: { toString(): string }; name: string; phone: string; avatarColor: string } | null
   if (!user) return NextResponse.json({ error: 'Používateľ nebol nájdený' }, { status: 404 })
 
   const cookieStore = await cookies()
