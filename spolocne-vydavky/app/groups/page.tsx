@@ -160,55 +160,69 @@ export default function GroupsPage() {
           <>
             {/* Group Selector */}
             <div ref={dropdownRef} className="relative mb-6">
-              <div className="rounded-2xl px-4 py-3" style={{ background: '#1c1c1e', border: '0.5px solid #38383a' }}>
-                <div className="text-[12px] mb-1.5" style={{ color: '#8e8e93' }}>Pre skupinu</div>
-                <button
-                  onClick={() => setDropdownOpen(v => !v)}
-                  className="flex items-center gap-2 w-full"
-                >
-                  <span className="text-[17px] font-semibold text-white flex-1 text-left">
-                    {selectedGroup?.emoji} {selectedGroup?.name}
-                  </span>
-                  <ChevronDown
-                    size={17}
-                    color="#0a84ff"
-                    strokeWidth={2.2}
-                    style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
-                  />
-                </button>
-                {selectedGroup && (
-                  <div className="text-[12px] mt-1" style={{ color: '#8e8e93' }}>
-                    {selectedGroup.members.length} členov
-                  </div>
-                )}
-              </div>
-
-              {dropdownOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden z-50"
-                  style={{ background: '#1c1c1e', border: '0.5px solid #38383a', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
-                  {groups.map((g, i) => (
-                    <button
-                      key={g.id}
-                      onClick={() => { loadGroup(g.id, g); setDropdownOpen(false) }}
-                      className="flex items-center gap-3 w-full px-4 py-3 text-left"
-                      style={{
-                        borderBottom: i < groups.length - 1 ? '0.5px solid #38383a' : 'none',
-                        background: selectedGroup?.id === g.id ? '#2c2c2e' : 'transparent'
-                      }}
-                    >
-                      <span className="text-[22px] leading-none">{g.emoji}</span>
-                      <div className="flex-1">
-                        <div className="text-[14px] font-semibold text-white">{g.name}</div>
-                        <div className="text-[11px]" style={{ color: '#8e8e93' }}>{g.members.length} členov</div>
-                      </div>
-                      {selectedGroup?.id === g.id && (
-                        <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: '#0a84ff' }} />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <button
+                onClick={() => setDropdownOpen(v => !v)}
+                className="flex items-center gap-2 w-full rounded-2xl px-4 py-3"
+                style={{ background: '#1c1c1e', border: '0.5px solid #38383a' }}
+              >
+                <span className="text-[17px] font-semibold text-white flex-1 text-left">
+                  {selectedGroup?.emoji} {selectedGroup?.name}
+                </span>
+                <ChevronDown
+                  size={17}
+                  color="#0a84ff"
+                  strokeWidth={2.2}
+                  style={{ transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
+                />
+              </button>
             </div>
+
+            {/* Group picker bottom sheet */}
+            {dropdownOpen && (
+              <div
+                className="fixed inset-0 z-50 flex items-end justify-center"
+                style={{ background: 'rgba(0,0,0,0.5)' }}
+                onClick={() => setDropdownOpen(false)}
+              >
+                <div
+                  className="w-full max-w-[430px] rounded-t-3xl pb-8"
+                  style={{ background: '#1c1c1e' }}
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="flex justify-center pt-3 pb-4">
+                    <div className="w-10 h-1 rounded-full" style={{ background: '#38383a' }} />
+                  </div>
+                  <div className="text-[17px] font-semibold text-white text-center mb-4">Vyberte skupinu</div>
+                  <div>
+                    {groups.map((g, i) => (
+                      <button
+                        key={g.id}
+                        onClick={() => { loadGroup(g.id, g); setDropdownOpen(false) }}
+                        className="flex items-center gap-3 w-full px-5 py-3 text-left"
+                        style={{ borderTop: i > 0 ? '0.5px solid #38383a' : 'none' }}
+                      >
+                        <div className="w-11 h-11 rounded-full flex items-center justify-center text-[20px] flex-shrink-0"
+                          style={{ background: '#2c2c2e' }}>
+                          {g.emoji}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[15px] font-semibold text-white">{g.name}</div>
+                          <div className="text-[12px]" style={{ color: '#8e8e93' }}>{g.members.length} členov</div>
+                        </div>
+                        {g.potBalance != null && g.potBalance > 0 && (
+                          <div className="text-[15px] font-semibold text-[#30d158] flex-shrink-0">
+                            {g.potBalance.toFixed(2).replace('.', ',')} EUR
+                          </div>
+                        )}
+                        {selectedGroup?.id === g.id && (
+                          <div className="w-2 h-2 rounded-full flex-shrink-0 ml-2" style={{ background: '#0a84ff' }} />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {groupLoading && (
               <div className="py-6 text-center" style={{ color: '#8e8e93' }}>Načítavam skupinu...</div>
