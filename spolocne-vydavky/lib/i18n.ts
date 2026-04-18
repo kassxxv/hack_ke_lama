@@ -20,6 +20,8 @@ export const T = {
     splitExpense: 'Rozdeliť výdavok',
     pdfSoon: 'Export do PDF bude čoskoro dostupný',
     comingSoon: 'Táto funkcia bude čoskoro dostupná',
+    balanceLabel: 'Účtovný zostatok platný k 18.04.2026 11:43',
+    nav: { home: 'Domov', analytics: 'Prehľady', pay: 'Platba', cards: 'Karty', bank: 'Banka' },
   },
   en: {
     recentTx: 'Recent transactions',
@@ -40,6 +42,8 @@ export const T = {
     splitExpense: 'Split expense',
     pdfSoon: 'PDF export coming soon',
     comingSoon: 'This feature is coming soon',
+    balanceLabel: 'Account balance as of 18.04.2026 11:43',
+    nav: { home: 'Home', analytics: 'Analytics', pay: 'Pay', cards: 'Cards', bank: 'Bank' },
   },
 } satisfies Record<Lang, object>
 

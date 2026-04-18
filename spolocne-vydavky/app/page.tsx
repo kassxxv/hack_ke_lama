@@ -93,7 +93,7 @@ export default async function Home() {
               <span className="text-[42px] font-bold text-white tracking-tight">2 341,50</span>
               <span className="text-[22px] font-semibold" style={{ color: '#8e8e93' }}>EUR</span>
             </div>
-            <div className="text-[12px]" style={{ color: '#8e8e93' }}>Účtovný zostatok platný k 18.04.2026 11:43</div>
+            <div className="text-[12px]" style={{ color: '#8e8e93' }}>{t.balanceLabel}</div>
           </div>
 
           {/* Sparkline */}
