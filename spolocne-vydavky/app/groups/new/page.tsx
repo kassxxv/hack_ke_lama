@@ -1,7 +1,7 @@
 'use client'
 
 import TBShell from '@/components/TBShell'
-import { useStore } from '@/lib/store'
+import { createGroup } from '@/lib/api'
 import { ChevronLeft, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -17,7 +17,6 @@ const GROUP_TYPES: { type: GroupType; emoji: string; label: string; desc: string
 const ME = { id: 'u1', name: 'Marek Novák', phone: '+421 900 111 222', avatarColor: '#5B5EA6' }
 
 export default function NewGroupPage() {
-  const { dispatch } = useStore()
   const router = useRouter()
   const [step, setStep] = useState<1 | 2>(1)
   const [groupType, setGroupType] = useState<GroupType | null>(null)
@@ -33,19 +32,14 @@ export default function NewGroupPage() {
     }
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     if (!name.trim() || !groupType) return
-    dispatch({
-      type: 'ADD_GROUP',
-      group: {
-        id: `g${Date.now()}`,
-        name: name.trim(),
-        type: groupType,
-        emoji: GROUP_TYPES.find(t => t.type === groupType)?.emoji ?? '👥',
-        totalOwed: 0,
-        isTemporary: groupType === 'peers',
-        members: [{ user: ME, role: 'admin', balance: 0 }],
-      },
+    await createGroup({
+      name: name.trim(),
+      type: groupType,
+      emoji: GROUP_TYPES.find(t => t.type === groupType)?.emoji ?? '👥',
+      isTemporary: groupType === 'peers',
+      members: [{ userId: ME.id, name: ME.name, phone: ME.phone, avatarColor: ME.avatarColor, role: 'admin' }],
     })
     router.push('/groups')
   }

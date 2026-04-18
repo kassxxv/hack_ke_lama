@@ -2,6 +2,7 @@
 
 import TBShell from '@/components/TBShell'
 import { useStore } from '@/lib/store'
+import { createExpense, fetchGroups } from '@/lib/api'
 import { ChevronLeft, Check } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -38,7 +39,7 @@ function AddExpenseContent() {
     })
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!merchant.trim() || numericAmount <= 0 || !group) return
     const splitMembers = allSelected
     const splits = splitMembers.map(userId => ({
@@ -46,19 +47,14 @@ function AddExpenseContent() {
       amount: parseFloat((numericAmount / splitMembers.length).toFixed(2)),
       settled: userId === paidBy,
     }))
-    dispatch({
-      type: 'ADD_EXPENSE',
-      expense: {
-        id: `e${Date.now()}`,
-        groupId,
-        amount: numericAmount,
-        paidBy,
-        splits,
-        merchant: merchant.trim(),
-        date: new Date().toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' }),
-        isPersonal: false,
-        category,
-      },
+    await createExpense(groupId, {
+      amount: numericAmount,
+      paidBy,
+      splits,
+      merchant: merchant.trim(),
+      date: new Date().toLocaleDateString('sk-SK', { day: 'numeric', month: 'long', year: 'numeric' }),
+      isPersonal: false,
+      category,
     })
     router.push(`/groups/${groupId}`)
   }

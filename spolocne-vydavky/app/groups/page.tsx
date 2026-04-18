@@ -3,16 +3,26 @@
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import GroupCard from '@/components/GroupCard'
-import { useStore } from '@/lib/store'
+import { fetchGroups } from '@/lib/api'
 import { Plus, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import type { Group } from '@/types'
 
 const ME = 'u1'
 
 export default function GroupsPage() {
-  const { state } = useStore()
+  const [groups, setGroups] = useState<Group[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const totalOwed = state.groups.reduce((sum, g) => {
+  useEffect(() => {
+    fetchGroups()
+      .then(setGroups)
+      .catch(() => setGroups([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const totalOwed = groups.reduce((sum, g) => {
     const me = g.members.find(m => m.user.id === ME)
     return sum + (me?.balance ?? 0)
   }, 0)
@@ -31,7 +41,6 @@ export default function GroupsPage() {
             </Link>
           </div>
 
-          {/* Balance on black */}
           <div className="text-center mb-5">
             <div className="text-[13px] mb-1" style={{ color: '#8e8e93' }}>Celkové saldo</div>
             <div className="flex items-baseline justify-center gap-2">
@@ -52,7 +61,9 @@ export default function GroupsPage() {
             </Link>
           </div>
 
-          {state.groups.length === 0 ? (
+          {loading ? (
+            <div className="py-10 text-center" style={{ color: '#8e8e93' }}>Načítavam...</div>
+          ) : groups.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="text-6xl mb-4">🤖</div>
               <div className="text-[17px] font-bold text-white mb-2">Žiadne skupiny</div>
@@ -65,8 +76,8 @@ export default function GroupsPage() {
             </div>
           ) : (
             <div>
-              {state.groups.map((group, i) => (
-                <div key={group.id} style={{ borderBottom: i < state.groups.length - 1 ? '0.5px solid #38383a' : 'none' }}>
+              {groups.map((group, i) => (
+                <div key={group.id} style={{ borderBottom: i < groups.length - 1 ? '0.5px solid #38383a' : 'none' }}>
                   <GroupCard group={group} currentUserId={ME} />
                 </div>
               ))}

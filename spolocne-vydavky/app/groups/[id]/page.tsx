@@ -3,34 +3,50 @@
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
 import RoleBadge from '@/components/RoleBadge'
-import { useStore } from '@/lib/store'
+import { fetchExpenses, settleDebt } from '@/lib/api'
 import { calculateDebts } from '@/lib/debt'
 import { ChevronLeft, UserPlus, Volume2, Plus, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { use } from 'react'
+import { use, useEffect, useState } from 'react'
+import type { Group, Expense } from '@/types'
 
 const ME = 'u1'
 
 export default function GroupDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
-  const { state, dispatch } = useStore()
+  const [group, setGroup] = useState<Group | null>(null)
+  const [expenses, setExpenses] = useState<Expense[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const group = state.groups.find(g => g.id === id) ?? state.groups[0]
-  const expenses = state.expenses.filter(e => e.groupId === id)
-  const me = group?.members.find(m => m.user.id === ME)
-  const balance = me?.balance ?? 0
-  const debts = group ? calculateDebts(group.members) : []
-
-  function handleSettle(fromId: string, toId: string, amount: number) {
-    dispatch({ type: 'SETTLE', groupId: id, fromId, toId, amount })
+  async function load() {
+    try {
+      const [gRes, exps] = await Promise.all([
+        fetch(`/api/groups/${id}`).then(r => r.json()),
+        fetchExpenses(id),
+      ])
+      setGroup(gRes.group ? { ...gRes.group, id: gRes.group._id ?? id, members: (gRes.group.members ?? []).map((m: { userId: string; name: string; phone: string; avatarColor: string; role: string }) => ({ user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor }, role: m.role, balance: 0 })) } : null)
+      setExpenses(exps)
+    } catch { /* keep empty */ }
+    finally { setLoading(false) }
   }
 
-  if (!group) return null
+  useEffect(() => { load() }, [id])
+
+  async function handleSettle(fromId: string, toId: string) {
+    await settleDebt(id, fromId, toId)
+    await load()
+  }
+
+  if (loading) return <TBShell><div className="p-8 text-center" style={{ color: '#8e8e93' }}>Načítavam...</div></TBShell>
+  if (!group) return <TBShell><div className="p-8 text-center" style={{ color: '#8e8e93' }}>Skupina nenájdená</div></TBShell>
+
+  const me = group.members.find(m => m.user.id === ME)
+  const balance = me?.balance ?? 0
+  const debts = calculateDebts(group.members)
 
   return (
     <TBShell>
       <div className="px-4 pt-3">
-        {/* Header */}
         <div className="flex items-center mb-5" style={{ position: 'relative' }}>
           <Link href="/groups" className="w-8 h-8 flex items-center justify-center">
             <ChevronLeft size={22} color="#0a84ff" strokeWidth={2.2} />
@@ -44,7 +60,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </button>
         </div>
 
-        {/* My balance — on black */}
+        {/* Balance */}
         <div className="text-center mb-5">
           <div className="text-[13px] mb-1" style={{ color: '#8e8e93' }}>Tvoje saldo</div>
           <div className="flex items-baseline justify-center gap-2">
@@ -56,17 +72,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           <div className="text-[12px] mt-1" style={{ color: '#8e8e93' }}>
             {balance > 0 ? 'Ostatní ti dlhujú' : balance < 0 ? 'Dlhuješ ostatným' : 'Vyrovnaný ✓'}
           </div>
-
-          <button
-            className="mt-3 mx-auto flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium"
-            style={{ background: '#1c1c1e', color: '#0a84ff' }}
-          >
-            <Volume2 size={14} />
-            Hlasové zhrnutie
+          <button className="mt-3 mx-auto flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium" style={{ background: '#1c1c1e', color: '#0a84ff' }}>
+            <Volume2 size={14} />Hlasové zhrnutie
           </button>
         </div>
 
-        {/* Kto komu dlhuje — the key clarity section */}
+        {/* Kto komu dlhuje */}
         {debts.length > 0 && (
           <div className="mb-5">
             <div className="text-[15px] font-bold text-white mb-3">Kto komu dlhuje</div>
@@ -80,26 +91,18 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                       <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0" style={{ background: d.fromColor }}>
                         {d.fromName.charAt(0)}
                       </div>
-                      <span className="text-[14px] font-semibold text-white">
-                        {isMeDebtor ? 'Ty' : d.fromName.split(' ')[0]}
-                      </span>
+                      <span className="text-[14px] font-semibold text-white">{isMeDebtor ? 'Ty' : d.fromName.split(' ')[0]}</span>
                       <ArrowRight size={14} color="#8e8e93" />
                       <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0" style={{ background: d.toColor }}>
                         {d.toName.charAt(0)}
                       </div>
-                      <span className="text-[14px] font-semibold text-white flex-1">
-                        {isMeCreditor ? 'Tebe' : d.toName.split(' ')[0]}
-                      </span>
+                      <span className="text-[14px] font-semibold text-white flex-1">{isMeCreditor ? 'Tebe' : d.toName.split(' ')[0]}</span>
                       <span className={`text-[15px] font-mono font-semibold ${isMeDebtor ? 'text-[#ff3b30]' : isMeCreditor ? 'text-[#30d158]' : 'text-white'}`}>
                         {d.amount.toFixed(2).replace('.', ',')} €
                       </span>
                     </div>
                     {(isMeDebtor || isMeCreditor) && (
-                      <button
-                        onClick={() => handleSettle(d.fromId, d.toId, d.amount)}
-                        className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white"
-                        style={{ background: '#0a84ff' }}
-                      >
+                      <button onClick={() => handleSettle(d.fromId, d.toId)} className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white" style={{ background: '#0a84ff' }}>
                         {isMeDebtor ? `Vyrovnať · ${d.amount.toFixed(2).replace('.', ',')} €` : `Vyžiadať · ${d.amount.toFixed(2).replace('.', ',')} €`}
                       </button>
                     )}
@@ -115,11 +118,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           <div className="text-[15px] font-bold text-white mb-3">Členovia</div>
           <div>
             {group.members.map((m, i) => (
-              <div
-                key={m.user.id}
-                className="flex items-center gap-3 py-3"
-                style={{ borderBottom: i < group.members.length - 1 ? '0.5px solid #38383a' : 'none' }}
-              >
+              <div key={m.user.id} className="flex items-center gap-3 py-3" style={{ borderBottom: i < group.members.length - 1 ? '0.5px solid #38383a' : 'none' }}>
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold text-white flex-shrink-0" style={{ background: m.user.avatarColor }}>
                   {m.user.name.charAt(0)}
                 </div>
@@ -142,9 +141,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           <div className="flex items-center justify-between mb-3">
             <span className="text-[15px] font-bold text-white">Výdavky</span>
             <Link href={`/add-expense?groupId=${id}`}>
-              <span className="text-[14px] flex items-center gap-1" style={{ color: '#0a84ff' }}>
-                <Plus size={14} />Pridať
-              </span>
+              <span className="text-[14px] flex items-center gap-1" style={{ color: '#0a84ff' }}><Plus size={14} />Pridať</span>
             </Link>
           </div>
           {expenses.length > 0 ? (
