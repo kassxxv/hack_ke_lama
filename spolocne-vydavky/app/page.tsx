@@ -118,16 +118,6 @@ export default async function Home() {
           {/* Quick actions */}
           <QuickActions />
 
-          {/* Groups teaser */}
-          <Link href="/groups">
-            <div className="rounded-2xl p-4 mb-5 flex items-center justify-between" style={{ background: '#1c1c1e', border: '1px solid #0a84ff33' }}>
-              <div>
-                <div className="text-[11px] font-semibold mb-0.5 uppercase tracking-wide" style={{ color: '#0a84ff' }}>{t.sharedExpenses}</div>
-                <div className={`text-[15px] font-semibold text-white`}><span className={`font-mono ${totalOwed < 0 ? 'text-[#ff3b30]' : 'text-[#30d158]'}`}>{teaserLabel}</span></div>
-                <div className="text-[12px] mt-0.5" style={{ color: '#8e8e93' }}>{t.groups(groupCount)} · {t.swipeLeft}</div>
-              </div>
-            </div>
-          </Link>
 
           {/* Transactions */}
           <div className="flex items-center justify-between mb-3">
