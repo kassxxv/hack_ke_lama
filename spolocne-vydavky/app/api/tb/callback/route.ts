@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
 export async function GET(req: NextRequest) {
-  const base = new URL(req.url).origin
+  const base = new URL(process.env.TB_REDIRECT_URI!).origin
   const code = req.nextUrl.searchParams.get('code')
   const error = req.nextUrl.searchParams.get('error')
 

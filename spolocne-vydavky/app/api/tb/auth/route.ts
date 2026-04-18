@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-export async function GET(req: NextRequest) {
-  const base = new URL(req.url).origin
+export async function GET(_req: NextRequest) {
+  const base = new URL(process.env.TB_REDIRECT_URI!).origin
 
   // Step 1: client_credentials token (app-level, not user)
   const ccRes = await fetch(process.env.TB_TOKEN_URL!, {
