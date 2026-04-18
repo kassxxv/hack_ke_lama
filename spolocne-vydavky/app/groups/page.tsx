@@ -52,13 +52,26 @@ export default function GroupsPage() {
             </Link>
           </div>
 
-          <div>
-            {state.groups.map((group, i) => (
-              <div key={group.id} style={{ borderBottom: i < state.groups.length - 1 ? '0.5px solid #38383a' : 'none' }}>
-                <GroupCard group={group} currentUserId={ME} />
-              </div>
-            ))}
-          </div>
+          {state.groups.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="text-6xl mb-4">🤖</div>
+              <div className="text-[17px] font-bold text-white mb-2">Žiadne skupiny</div>
+              <div className="text-[14px] mb-6" style={{ color: '#8e8e93' }}>Vytvor svoju prvú skupinu a začni deliť výdavky</div>
+              <Link href="/groups/new">
+                <button className="px-6 py-3 rounded-2xl font-semibold text-[15px] text-white" style={{ background: '#0a84ff' }}>
+                  Vytvoriť skupinu
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <div>
+              {state.groups.map((group, i) => (
+                <div key={group.id} style={{ borderBottom: i < state.groups.length - 1 ? '0.5px solid #38383a' : 'none' }}>
+                  <GroupCard group={group} currentUserId={ME} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </SwipeLayout>
     </TBShell>
