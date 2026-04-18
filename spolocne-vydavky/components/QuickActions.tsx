@@ -1,18 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Share2, Download, Monitor, Clock, Repeat } from 'lucide-react'
-
-const ACTIONS = [
-  { icon: Share2, label: 'Zdieľať IBAN' },
-  { icon: Download, label: 'Vyžiadať platbu' },
-  { icon: Monitor, label: 'Výber z bankomatu' },
-  { icon: Clock, label: 'Čakajúce platby' },
-  { icon: Repeat, label: 'Trvalé príkazy' },
-]
+import { Download, Monitor, Repeat, Users } from 'lucide-react'
+import Link from 'next/link'
+import { T, getLang } from '@/lib/i18n'
 
 export default function QuickActions() {
   const [toast, setToast] = useState('')
+  const [lang, setLang] = useState<'sk' | 'en'>('sk')
+
+  useEffect(() => {
+    setLang(getLang(localStorage.getItem('lang') ?? undefined))
+  }, [])
 
   useEffect(() => {
     if (!toast) return
@@ -20,13 +19,21 @@ export default function QuickActions() {
     return () => clearTimeout(t)
   }, [toast])
 
+  const t = T[lang]
+
+  const ACTIONS = [
+    { icon: Download, label: t.requestPayment, action: () => setToast(t.comingSoon) },
+    { icon: Monitor, label: t.atm, action: () => setToast(t.comingSoon) },
+    { icon: Repeat, label: t.standingOrders, action: () => setToast(t.comingSoon) },
+  ]
+
   return (
     <>
       <div className="flex gap-3 overflow-x-auto no-scrollbar mb-5 pb-1">
-        {ACTIONS.map(({ icon: Icon, label }) => (
+        {ACTIONS.map(({ icon: Icon, label, action }) => (
           <button
             key={label}
-            onClick={() => setToast('Táto funkcia bude čoskoro dostupná')}
+            onClick={action}
             className="flex flex-col items-center gap-2 flex-shrink-0"
           >
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
@@ -35,6 +42,14 @@ export default function QuickActions() {
             <span className="text-[11px] text-white text-center w-16 leading-tight">{label}</span>
           </button>
         ))}
+
+        {/* Spoločné výdavky shortcut */}
+        <Link href="/groups" className="flex flex-col items-center gap-2 flex-shrink-0">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#1a3a1e' }}>
+            <Users size={22} color="#30d158" strokeWidth={1.8} />
+          </div>
+          <span className="text-[11px] text-center w-16 leading-tight" style={{ color: '#30d158' }}>{t.sharedExpenses}</span>
+        </Link>
       </div>
 
       {toast && (
