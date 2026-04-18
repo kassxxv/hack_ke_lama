@@ -170,7 +170,7 @@ export default function GroupsPage() {
             {/* Group picker bottom sheet */}
             {dropdownOpen && (
               <div
-                className="fixed inset-0 z-50 flex items-end justify-center"
+                className="fixed inset-0 z-[200] flex items-end justify-center"
                 style={{ background: 'rgba(0,0,0,0.5)' }}
                 onClick={() => setDropdownOpen(false)}
               >
