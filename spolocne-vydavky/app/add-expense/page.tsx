@@ -16,13 +16,15 @@ function AddExpenseContent() {
   const router = useRouter()
   const params = useSearchParams()
   const preGroupId = params.get('groupId') ?? state.groups[0]?.id ?? ''
+  const preAmount = params.get('amount') ?? ''
+  const preMerchant = params.get('merchant') ?? ''
 
   const [groupId, setGroupId] = useState(preGroupId)
-  const [merchant, setMerchant] = useState('')
-  const [amount, setAmount] = useState('')
+  const [merchant, setMerchant] = useState(preMerchant)
+  const [amount, setAmount] = useState(preAmount)
   const [category, setCategory] = useState('Potraviny')
   const [splitType, setSplitType] = useState<SplitType>('equal')
-  const [paidBy, setPaidBy] = useState('u1')
+  const [paidBy, setPaidBy] = useState(state.currentUser?.id ?? '')
   const [selected, setSelected] = useState<Set<string>>(new Set())
 
   const group = state.groups.find(g => g.id === groupId) ?? state.groups[0]

@@ -1,19 +1,13 @@
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
-import { ChevronRight, Mail, Settings, Share2, Download, Monitor, Clock, Repeat } from 'lucide-react'
+import QuickActions from '@/components/QuickActions'
+import { ChevronRight, Mail, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
 import { connectDB } from '@/lib/mongoose'
 import { GroupModel, ExpenseModel } from '@/models/Group'
 import { UserModel } from '@/models/User'
 
-const QUICK_ACTIONS = [
-  { icon: Share2, label: 'Zdieľať IBAN' },
-  { icon: Download, label: 'Vyžiadať platbu' },
-  { icon: Monitor, label: 'Výber z bankomatu' },
-  { icon: Clock, label: 'Čakajúce platby' },
-  { icon: Repeat, label: 'Trvalé príkazy' },
-]
 
 const CATEGORY_EMOJI: Record<string, string> = {
   Potraviny: '🛒', Doprava: '⛽', Zábava: '🎭',
@@ -82,9 +76,9 @@ export default async function Home() {
               <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white" style={{ background: '#0a84ff' }}>2</div>
             </div>
             <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[13px] font-bold text-white" style={{ background: '#5B5EA6' }}>{userName.charAt(0)}</div>
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
+            <Link href="/nastavenia" className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
               <Settings size={18} color="#ffffff" />
-            </div>
+            </Link>
           </div>
 
           {/* Account identity */}
@@ -125,16 +119,7 @@ export default async function Home() {
           </div>
 
           {/* Quick actions */}
-          <div className="flex gap-3 overflow-x-auto no-scrollbar mb-5 pb-1">
-            {QUICK_ACTIONS.map(({ icon: Icon, label }) => (
-              <button key={label} className="flex flex-col items-center gap-2 flex-shrink-0">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: '#1c1c1e' }}>
-                  <Icon size={22} color="#0a84ff" strokeWidth={1.8} />
-                </div>
-                <span className="text-[11px] text-white text-center w-16 leading-tight">{label}</span>
-              </button>
-            ))}
-          </div>
+          <QuickActions />
 
           {/* Groups teaser */}
           <Link href="/groups">
@@ -151,7 +136,7 @@ export default async function Home() {
           {/* Transactions */}
           <div className="flex items-center justify-between mb-3">
             <span className="text-[17px] font-bold text-white">Posledné pohyby</span>
-            <span className="text-[14px]" style={{ color: '#0a84ff' }}>Všetky pohyby</span>
+            <Link href="/" className="text-[14px]" style={{ color: '#0a84ff' }}>Všetky pohyby</Link>
           </div>
 
           <div>

@@ -18,6 +18,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const [group, setGroup] = useState<Group | null>(null)
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
+  const [toast, setToast] = useState('')
+
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(''), 2000)
+    return () => clearTimeout(t)
+  }, [toast])
 
   async function load() {
     try {
@@ -44,6 +51,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
   return (
     <TBShell>
+      <>
+      {toast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-2xl text-[13px] font-medium text-white z-50" style={{ background: '#1c1c1e', border: '1px solid #38383a' }}>
+          {toast}
+        </div>
+      )}
       <div className="px-4 pt-3">
         <div className="flex items-center mb-5" style={{ position: 'relative' }}>
           <Link href="/groups" className="w-8 h-8 flex items-center justify-center">
@@ -53,7 +66,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             <div className="text-[17px] font-semibold text-white">{group.name}</div>
             <div className="text-[11px]" style={{ color: '#8e8e93' }}>{group.members.length} členov</div>
           </div>
-          <button className="ml-auto w-8 h-8 flex items-center justify-center">
+          <button className="ml-auto w-8 h-8 flex items-center justify-center" onClick={() => setToast('Pozývanie členov čoskoro')}>
             <UserPlus size={18} color="#8e8e93" />
           </button>
         </div>
@@ -70,7 +83,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           <div className="text-[12px] mt-1" style={{ color: '#8e8e93' }}>
             {balance > 0 ? 'Ostatní ti dlhujú' : balance < 0 ? 'Dlhuješ ostatným' : 'Vyrovnaný ✓'}
           </div>
-          <button className="mt-3 mx-auto flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium" style={{ background: '#1c1c1e', color: '#0a84ff' }}>
+          <button onClick={() => setToast('Hlasové zhrnutie čoskoro')} className="mt-3 mx-auto flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium" style={{ background: '#1c1c1e', color: '#0a84ff' }}>
             <Volume2 size={14} />Hlasové zhrnutie
           </button>
         </div>
@@ -159,6 +172,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           )}
         </div>
       </div>
+      </>
     </TBShell>
   )
 }
