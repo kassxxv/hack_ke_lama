@@ -132,7 +132,9 @@ export default function GroupsPage() {
       <div className="px-4 pt-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-[20px] font-bold text-white">Spoločné výdavky</h1>
+          <h1 className="text-[20px] font-bold text-white">
+            {selectedGroup ? `${selectedGroup.emoji} ${selectedGroup.name}` : 'Spoločné výdavky'}
+          </h1>
           <Link href="/groups/new"
             className="w-9 h-9 rounded-full flex items-center justify-center"
             style={{ background: '#0a84ff' }}>
