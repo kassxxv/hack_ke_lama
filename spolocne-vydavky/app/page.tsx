@@ -121,7 +121,7 @@ export default async function Home() {
 
           {/* TB Connect banner — shown when not connected */}
           {!live && (
-            <Link href="/api/tb/auth">
+            <a href="/api/tb/auth">
               <div className="rounded-2xl p-4 mb-4 flex items-center gap-3" style={{ background: '#1c1c1e', border: '1px solid #38383a' }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#1c3a5e' }}>
                   <Link2 size={18} color="#0a84ff" />
@@ -132,7 +132,7 @@ export default async function Home() {
                 </div>
                 <ChevronRight size={16} color="#0a84ff" />
               </div>
-            </Link>
+            </a>
           )}
           {live && (
             <div className="rounded-xl px-3 py-2 mb-4 flex items-center gap-2" style={{ background: '#1a3a1e' }}>
