@@ -12,7 +12,6 @@ export async function GET(_req: NextRequest) {
       grant_type: 'client_credentials',
       client_id: process.env.TB_CLIENT_ID!,
       client_secret: process.env.TB_CLIENT_SECRET!,
-      scope: 'AIS',
     }),
     cache: 'no-store',
   })
