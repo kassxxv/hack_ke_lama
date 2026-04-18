@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const error = req.nextUrl.searchParams.get('error')
 
   if (error || !code) {
-    console.error('TB OAuth error:', error)
+    console.error('TB OAuth callback error:', error)
     return NextResponse.redirect(new URL('/?tb_error=1', req.url))
   }
 
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     client_secret: process.env.TB_CLIENT_SECRET!,
   })
 
-  const res = await fetch('https://api.tatrabanka.sk/tatrapayplus/sandbox/auth/oauth/v2/token', {
+  const res = await fetch(process.env.TB_TOKEN_URL!, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/?tb_error=1', req.url))
   }
 
-  const data = await res.json() as { access_token: string; expires_in: number }
+  const data = await res.json() as { access_token: string; refresh_token: string; expires_in: number }
   const cookieStore = await cookies()
   cookieStore.set('tb_token', data.access_token, {
     httpOnly: true,
@@ -39,6 +39,14 @@ export async function GET(req: NextRequest) {
     path: '/',
     sameSite: 'lax',
   })
+  if (data.refresh_token) {
+    cookieStore.set('tb_refresh', data.refresh_token, {
+      httpOnly: true,
+      maxAge: 181 * 24 * 60 * 60,
+      path: '/',
+      sameSite: 'lax',
+    })
+  }
 
   return NextResponse.redirect(new URL('/?tb_connected=1', req.url))
 }
