@@ -236,7 +236,6 @@ export default function GroupsPage() {
                 expenses={expenses}
                 currentUserId={ME}
                 onToast={setToast}
-                onManageMembers={() => setManageMembersOpen(true)}
               />
             )}
 
