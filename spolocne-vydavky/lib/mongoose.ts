@@ -22,9 +22,12 @@ export async function connectDB() {
   if (cache.conn) return cache.conn;
   if (!cache.promise) {
     mongoose.set('bufferTimeoutMS', 30000)
+    mongoose.connection.on('error', (err) => console.error('[mongoose] connection error:', String(err)))
+    mongoose.connection.on('disconnected', () => { console.warn('[mongoose] disconnected — resetting cache'); cache.conn = null; cache.promise = null })
+    mongoose.connection.on('reconnected', () => console.log('[mongoose] reconnected'))
     console.log('[mongoose] Connecting to:', uri.slice(0, 50) + '…')
     cache.promise = mongoose.connect(uri, { serverSelectionTimeoutMS: 30000, connectTimeoutMS: 35000, family: 4 }).then((m) => {
-      console.log('[mongoose] Connected OK')
+      console.log('[mongoose] Connected OK, readyState:', mongoose.connection.readyState)
       return m
     }).catch((err) => {
       console.error('[mongoose] Connection FAILED:', String(err))
