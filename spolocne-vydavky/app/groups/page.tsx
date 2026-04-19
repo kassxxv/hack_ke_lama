@@ -36,9 +36,10 @@ export default function GroupsPage() {
   useEffect(() => {
     fetch('/api/groups')
       .then(r => r.json())
-      .then((data: Group[]) => {
-        setGroups(data)
-        if (data.length > 0) loadGroup(data[0].id, data[0])
+      .then((data: unknown) => {
+        const list = Array.isArray(data) ? (data as Group[]) : []
+        setGroups(list)
+        if (list.length > 0) loadGroup(list[0].id, list[0])
         setLoading(false)
       })
       .catch(() => setLoading(false))
