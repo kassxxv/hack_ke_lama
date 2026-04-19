@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react'
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
 import JointAccountView from '@/components/JointAccountView'
-import ManageMembersSheet from '@/components/ManageMembersSheet'
 import { calculateDebts } from '@/lib/debt'
 import { settleDebt } from '@/lib/api'
 import {
@@ -29,7 +28,6 @@ export default function GroupsPage() {
   const [toast, setToast] = useState('')
   const [nudgedIds, setNudgedIds] = useState<Set<string>>(new Set())
   const [showAllDebts, setShowAllDebts] = useState(false)
-  const [manageMembersOpen, setManageMembersOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const pendingSettleRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
@@ -98,11 +96,11 @@ export default function GroupsPage() {
     { label: t.groupsPage.expenseReport, icon: BarChart2, href: selectedGroup ? `/groups/${selectedGroup.id}/report` : '/groups' },
     { label: t.groupsPage.subscriptions, icon: KeyRound, href: selectedGroup ? `/groups/${selectedGroup.id}/subscriptions` : '/groups' },
     { label: t.groupsPage.settleDebts, icon: ArrowLeftRight, action: () => setToast(t.groupsPage.settleSoon) },
-    { label: t.groupsPage.membersMgmt, icon: Users, action: () => setManageMembersOpen(true) },
+    { label: t.groupsPage.membersMgmt, icon: Users, action: () => setToast(t.groupsPage.membersSoon) },
     { label: t.groupsPage.voiceSummary, icon: Volume2, action: () => setToast(t.groupsPage.voiceSoon) },
   ] : [
     { label: t.groupsPage.expenseReport, icon: BarChart2, href: selectedGroup ? `/groups/${selectedGroup.id}/report` : '/groups' },
-    { label: t.groupsPage.membersMgmt, icon: Users, action: () => setManageMembersOpen(true) },
+    { label: t.groupsPage.membersMgmt, icon: Users, action: () => setToast(t.groupsPage.membersSoon) },
     { label: t.groupsPage.addExpense, icon: Plus, href: selectedGroup ? `/add-expense?groupId=${selectedGroup.id}` : '/add-expense' },
     { label: t.groupsPage.subscriptions, icon: KeyRound, href: selectedGroup ? `/groups/${selectedGroup.id}/subscriptions` : '/groups' },
     { label: t.groupsPage.settleDebts, icon: ArrowLeftRight, action: () => setToast(t.groupsPage.settleSoon) },
@@ -235,7 +233,6 @@ export default function GroupsPage() {
                 expenses={expenses}
                 currentUserId={ME}
                 onToast={setToast}
-                onManageMembers={() => setManageMembersOpen(true)}
               />
             )}
 
@@ -599,15 +596,6 @@ export default function GroupsPage() {
         )}
       </div>
 
-      {manageMembersOpen && selectedGroup && (
-        <ManageMembersSheet
-          group={selectedGroup}
-          currentUserId={ME}
-          onClose={() => setManageMembersOpen(false)}
-          onChange={async () => { await loadGroup(selectedGroup.id) }}
-          onToast={setToast}
-        />
-      )}
     </TBShell>
   )
 }
