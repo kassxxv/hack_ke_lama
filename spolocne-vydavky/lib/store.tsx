@@ -53,7 +53,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
     fetch('/api/groups')
       .then(r => r.json())
-      .then((groups: Group[]) => dispatch({ type: 'SET_GROUPS', groups }))
+      .then((data: unknown) => { if (Array.isArray(data)) dispatch({ type: 'SET_GROUPS', groups: data as Group[] }) })
       .catch(() => {})
   }, [])
 
