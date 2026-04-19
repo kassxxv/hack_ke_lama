@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
 import JointAccountView from '@/components/JointAccountView'
-import ManageMembersSheet from '@/components/ManageMembersSheet'
 import { calculateDebts } from '@/lib/debt'
 import { settleDebt } from '@/lib/api'
 import {
@@ -30,7 +29,7 @@ export default function GroupsPage() {
   const [toast, setToast] = useState('')
   const [nudgedIds, setNudgedIds] = useState<Set<string>>(new Set())
   const [showAllDebts, setShowAllDebts] = useState(false)
-  const [manageMembersOpen, setManageMembersOpen] = useState(false)
+  const [manageMembersOpen, setManageMembersOpen] = useState(false) // sheet removed, kept for action wiring
   const dropdownRef = useRef<HTMLDivElement>(null)
   const pendingSettleRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
@@ -607,15 +606,6 @@ export default function GroupsPage() {
         )}
       </div>
 
-      {manageMembersOpen && selectedGroup && (
-        <ManageMembersSheet
-          group={selectedGroup}
-          currentUserId={ME}
-          onClose={() => setManageMembersOpen(false)}
-          onChange={async () => { await loadGroup(selectedGroup.id) }}
-          onToast={setToast}
-        />
-      )}
     </TBShell>
   )
 }
