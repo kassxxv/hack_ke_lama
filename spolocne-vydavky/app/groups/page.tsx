@@ -39,13 +39,18 @@ export default function GroupsPage() {
       .then((data: unknown) => {
         const list = Array.isArray(data) ? (data as Group[]) : []
         setGroups(list)
-        if (list.length > 0) loadGroup(list[0].id, list[0])
+        if (list.length > 0) {
+          const savedId = sessionStorage.getItem('selectedGroupId')
+          const target = list.find(g => g.id === savedId) ?? list[0]
+          loadGroup(target.id, target)
+        }
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
 
   async function loadGroup(id: string, fallback?: Group) {
+    sessionStorage.setItem('selectedGroupId', id)
     setGroupLoading(true)
     try {
       const data = await fetch(`/api/groups/${id}`).then(r => r.json())
