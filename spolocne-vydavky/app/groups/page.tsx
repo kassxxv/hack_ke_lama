@@ -34,7 +34,8 @@ export default function GroupsPage() {
   useEffect(() => {
     fetch('/api/groups')
       .then(r => r.json())
-      .then((data: Group[]) => {
+      .then((data) => {
+        if (!Array.isArray(data)) { setLoading(false); return }
         setGroups(data)
         if (data.length > 0) loadGroup(data[0].id, data[0])
         setLoading(false)
