@@ -6,7 +6,7 @@ function calcBalances(members: { userId: string; name: string; phone: string; av
   const map: Record<string, number> = {}
   members.forEach(m => { map[m.userId] = 0 })
   expenses.forEach(e => {
-    e.splits.forEach(s => {
+    (e.splits ?? []).forEach(s => {
       if (!s.settled) {
         if (s.userId === e.paidBy) {
           map[e.paidBy] = (map[e.paidBy] ?? 0) + (e.amount - s.amount)
@@ -26,7 +26,8 @@ export async function GET() {
     const groups = await GroupModel.find().lean()
     const result = await Promise.all(groups.map(async (g) => {
       const expenses = await ExpenseModel.find({ groupId: g._id }).lean()
-      const balances = calcBalances(g.members as Parameters<typeof calcBalances>[0], expenses as Parameters<typeof calcBalances>[1])
+      const members = (g.members ?? []) as { userId: string; name: string; phone: string; avatarColor: string; role: string; contributed?: number }[]
+      const balances = calcBalances(members, expenses as Parameters<typeof calcBalances>[1])
       return {
         id: g._id.toString(),
         name: g.name,
@@ -35,7 +36,8 @@ export async function GET() {
         isTemporary: g.isTemporary,
         potBalance: (g as typeof g & { potBalance?: number }).potBalance ?? 0,
         potTarget: (g as typeof g & { potTarget?: number }).potTarget ?? null,
-        members: (g.members as { userId: string; name: string; phone: string; avatarColor: string; role: string; contributed?: number }[]).map(m => ({
+        budgetLimits: ((g as typeof g & { budgetLimits?: { category: string; limitAmount: number }[] }).budgetLimits ?? []).map(b => ({ category: b.category, limitAmount: b.limitAmount })),
+        members: members.map(m => ({
           user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor },
           role: m.role,
           balance: balances[m.userId] ?? 0,
@@ -47,7 +49,7 @@ export async function GET() {
     return NextResponse.json(result)
   } catch (err) {
     console.error('[GET /api/groups]', err)
-    return NextResponse.json({ error: 'Failed to load groups' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to load groups', detail: String(err) }, { status: 500 })
   }
 }
 
