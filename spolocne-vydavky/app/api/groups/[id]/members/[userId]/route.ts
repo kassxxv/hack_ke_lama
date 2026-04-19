@@ -16,6 +16,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   if (!member) return NextResponse.json({ error: 'Member not found' }, { status: 404 })
 
   member.role = role
+  group.markModified('members')
   await group.save()
   return NextResponse.json({ ok: true })
 }
@@ -27,10 +28,10 @@ export async function DELETE(_: NextRequest, { params }: Ctx) {
   const group = await GroupModel.findById(id)
   if (!group) return NextResponse.json({ error: 'Group not found' }, { status: 404 })
 
-  const before = group.members.length
-  group.members = group.members.filter((m: { userId: string }) => m.userId !== userId)
-  if (group.members.length === before) return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+  const exists = group.members.some((m: { userId: string }) => m.userId === userId)
+  if (!exists) return NextResponse.json({ error: 'Member not found' }, { status: 404 })
 
+  group.members.pull({ userId })
   await group.save()
   return NextResponse.json({ ok: true })
 }

@@ -105,18 +105,21 @@ export default function MembersPage() {
 
   async function handleRoleChange(userId: string, role: Role) {
     setRolePickerFor(null)
-    await fetch(`/api/groups/${id}/members/${userId}`, {
+    const res = await fetch(`/api/groups/${id}/members/${userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ role }),
     })
+    if (!res.ok) { setToast('Chyba — skús znova'); return }
     setGroup(g => g ? { ...g, members: g.members.map(m => m.user.id === userId ? { ...m, role } : m) } : g)
     setToast(tm.roleChanged)
   }
 
   async function handleRemove(userId: string, name: string) {
+    if (!confirm(`Odstrániť ${name} zo skupiny?`)) return
     setRemoving(userId)
-    await fetch(`/api/groups/${id}/members/${userId}`, { method: 'DELETE' })
+    const res = await fetch(`/api/groups/${id}/members/${userId}`, { method: 'DELETE' })
+    if (!res.ok) { setRemoving(null); setToast('Chyba — skús znova'); return }
     setGroup(g => g ? { ...g, members: g.members.filter(m => m.user.id !== userId) } : g)
     setToast(tm.removed(name))
     setRemoving(null)
