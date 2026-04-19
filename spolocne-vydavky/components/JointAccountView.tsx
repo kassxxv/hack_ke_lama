@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, PiggyBank, Users, BarChart2, KeyRound, SlidersHorizontal, AlertTriangle } from 'lucide-react'
+import { Plus, PiggyBank, Users, BarChart2, KeyRound, SlidersHorizontal, AlertTriangle, TrendingDown } from 'lucide-react'
 import Link from 'next/link'
 import type { Group, Expense, BudgetLimit } from '@/types'
 import { useLang } from '@/lib/use-lang'
