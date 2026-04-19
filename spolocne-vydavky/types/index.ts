@@ -1,5 +1,5 @@
 export type GroupType = 'family' | 'roommates' | 'peers'
-export type Role = 'admin' | 'member' | 'junior'
+export type Role = 'admin' | 'member' | 'junior' | 'parent' | 'child'
 export type SplitType = 'equal' | 'amount' | 'percent'
 
 export type User = {

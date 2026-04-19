@@ -33,6 +33,7 @@ export default function JointAccountView({
     name: m.user.name,
     avatarColor: m.user.avatarColor,
     contributed: m.contributed ?? 0,
+    role: m.role,
   }))
   const [showAllExpenses, setShowAllExpenses] = useState(false)
 
@@ -51,7 +52,7 @@ export default function JointAccountView({
 
   const quickActions = [
     { label: t.jointAccount.contribute, icon: PiggyBank, action: () => onToast(t.jointAccount.contributionSoon) },
-    { label: t.jointAccount.pay, icon: TrendingDown, action: () => onToast(t.jointAccount.paymentSoon) },
+    { label: t.groupsPage.membersMgmt, icon: Users, action: () => onToast(t.groupsPage.membersSoon) },
     { label: t.jointAccount.report, icon: BarChart2, href: `/groups/${group.id}/report` },
     { label: t.groupsPage.subscriptions, icon: KeyRound, href: `/groups/${group.id}/subscriptions` },
   ]
@@ -126,7 +127,18 @@ export default function JointAccountView({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[14px] font-medium text-white">{isMe ? t.common.you : c.name.split(' ')[0]}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[14px] font-medium text-white">{isMe ? t.common.you : c.name.split(' ')[0]}</span>
+                      {(c.role === 'parent' || c.role === 'child') && (
+                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold"
+                          style={{
+                            background: c.role === 'parent' ? '#0a84ff22' : '#bf5af222',
+                            color: c.role === 'parent' ? '#0a84ff' : '#bf5af2',
+                          }}>
+                          {c.role === 'parent' ? t.jointAccount.roleParent : t.jointAccount.roleChild}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[14px] font-mono font-semibold text-[#30d158]">
                       {c.contributed.toFixed(2).replace('.', ',')} €
                     </span>

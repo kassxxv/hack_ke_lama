@@ -16,9 +16,9 @@ export async function GET() {
     avatarColor: '#5B5EA6',
   })
 
-  const u2 = { userId: 'u2', name: 'Archie',  phone: '+421 900 333 444', avatarColor: '#9B5EA6', role: 'member' }
-  const u3 = { userId: 'u3', name: 'Lana',    phone: '+421 900 555 666', avatarColor: '#5EA6A0', role: 'member' }
-  const u4 = { userId: 'u4', name: 'Fox',     phone: '+421 900 777 888', avatarColor: '#A65E5E', role: 'member' }
+  const u2 = { userId: 'u2', name: 'Archie',  phone: '+421 900 333 444', avatarColor: '#9B5EA6', role: 'parent' }
+  const u3 = { userId: 'u3', name: 'Lana',    phone: '+421 900 555 666', avatarColor: '#5EA6A0', role: 'child' }
+  const u4 = { userId: 'u4', name: 'Fox',     phone: '+421 900 777 888', avatarColor: '#A65E5E', role: 'child' }
   const u5 = { userId: 'u5', name: 'Lana',    phone: '+421 900 999 000', avatarColor: '#5EA6A0', role: 'member' }
 
   const filipMember = {
@@ -26,7 +26,7 @@ export async function GET() {
     name: filip.name,
     phone: filip.phone,
     avatarColor: filip.avatarColor,
-    role: 'admin',
+    role: 'parent',
   }
 
   const [rodina, bytak, vylet] = await GroupModel.insertMany([
@@ -40,12 +40,12 @@ export async function GET() {
       members: [
         { ...filipMember, contributed: 200 },
         { ...u2, contributed: 200 },
-        { ...u3, contributed: 100 },
+        { ...u3, contributed: 0 },
+        { ...u4, contributed: 0 },
       ],
       contributions: [
         { userId: filipMember.userId, amount: 200, note: 'Apríl — môj príspevok', date: '2026-04-01' },
         { userId: u2.userId,          amount: 200, note: 'Apríl — Archie',        date: '2026-04-02' },
-        { userId: u3.userId,          amount: 100, note: 'Apríl — Lana',          date: '2026-04-03' },
       ],
       subscriptions: [
         {
@@ -55,7 +55,7 @@ export async function GET() {
           username: 'novak.family@gmail.com',
           password: 'N3tfl1x!Rodina2026',
           paidBy: filipMember.userId,
-          sharedWith: [filipMember.userId, u2.userId, u3.userId],
+          sharedWith: [filipMember.userId, u2.userId, u3.userId, u4.userId],
           nextBillingDate: '2026-05-02',
         },
         {
@@ -65,7 +65,7 @@ export async function GET() {
           username: 'novak.family',
           password: 'Sp0t!fy-Family#26',
           paidBy: u2.userId,
-          sharedWith: [filipMember.userId, u2.userId, u3.userId],
+          sharedWith: [filipMember.userId, u2.userId, u3.userId, u4.userId],
           nextBillingDate: '2026-05-10',
         },
         {
@@ -75,7 +75,7 @@ export async function GET() {
           username: 'rodina.novak@icloud.com',
           password: 'iCl0ud-Rodina!',
           paidBy: filipMember.userId,
-          sharedWith: [filipMember.userId, u2.userId, u3.userId],
+          sharedWith: [filipMember.userId, u2.userId, u3.userId, u4.userId],
           nextBillingDate: '2026-05-05',
         },
       ],
