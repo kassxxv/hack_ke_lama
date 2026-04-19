@@ -22,7 +22,12 @@ export async function connectDB() {
   if (cache.conn) return cache.conn;
   if (!cache.promise) {
     mongoose.set('bufferTimeoutMS', 30000)
-    cache.promise = mongoose.connect(uri, { serverSelectionTimeoutMS: 30000, connectTimeoutMS: 35000, family: 4 }).then((m) => m).catch((err) => {
+    console.log('[mongoose] Connecting to:', uri.slice(0, 50) + '…')
+    cache.promise = mongoose.connect(uri, { serverSelectionTimeoutMS: 30000, connectTimeoutMS: 35000, family: 4 }).then((m) => {
+      console.log('[mongoose] Connected OK')
+      return m
+    }).catch((err) => {
+      console.error('[mongoose] Connection FAILED:', String(err))
       cache.promise = null;
       throw err;
     });
