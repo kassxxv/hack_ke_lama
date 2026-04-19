@@ -16,6 +16,11 @@ export type Member = {
   contributed?: number
 }
 
+export type BudgetLimit = {
+  category: string
+  limitAmount: number
+}
+
 export type Group = {
   id: string
   name: string
@@ -26,6 +31,7 @@ export type Group = {
   emoji: string
   potBalance?: number
   potTarget?: number
+  budgetLimits?: BudgetLimit[]
 }
 
 export type Split = {

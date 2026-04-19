@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
 import JointAccountView from '@/components/JointAccountView'
@@ -410,7 +411,10 @@ export default function GroupsPage() {
                           ? relatedExpenses.map(e => e.merchant).join(', ')
                           : t.groupsPage.expenseUnsettled
                         return (
-                          <div key={`${d.fromId}-${d.toId}`} className="rounded-2xl p-4"
+                          <motion.div key={`${d.fromId}-${d.toId}`} className="rounded-2xl p-4"
+                            initial={{ opacity: 0, scale: 0.94, y: 6 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{ duration: 0.3, ease: [0.34, 1.56, 0.64, 1] }}
                             style={{ background: '#1c1c1e', border: (isMeDebtor || isMeCreditor) ? `1px solid ${isMeDebtor ? '#ff3b3033' : '#30d15833'}` : 'none' }}>
                             {/* Avatars + names */}
                             <div className="flex items-center gap-2 mb-2">
@@ -520,7 +524,7 @@ export default function GroupsPage() {
                                   ? t.groupsPage.settleAmount(d.amount.toFixed(2).replace('.', ','))
                                   : <><span className="bell-shake inline-block mr-1">🔔</span>{t.groupsPage.remind}</>}
                             </button>
-                          </div>
+                          </motion.div>
                         )
                       })}
                     </div>
@@ -580,10 +584,13 @@ export default function GroupsPage() {
                   {expenses.length > 0 ? (
                     <div>
                       {expenses.map((e, i) => (
-                        <div key={e.id}
+                        <motion.div key={e.id}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.28, delay: i * 0.05, ease: 'easeOut' }}
                           style={{ borderBottom: i < expenses.length - 1 ? '0.5px solid #38383a' : 'none' }}>
                           <ExpenseRow expense={e} currentUserId={ME} />
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   ) : (

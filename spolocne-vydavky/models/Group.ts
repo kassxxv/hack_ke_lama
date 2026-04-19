@@ -45,6 +45,11 @@ const SubscriptionSchema = new Schema({
   nextBillingDate: { type: String, default: '' },
 }, { timestamps: true })
 
+const BudgetLimitSchema = new Schema({
+  category: String,
+  limitAmount: Number,
+}, { _id: false })
+
 const GroupSchema = new Schema({
   name: { type: String, required: true },
   type: { type: String, enum: ['family', 'roommates', 'peers'], required: true },
@@ -56,6 +61,7 @@ const GroupSchema = new Schema({
   potTarget: { type: Number, default: null },
   contributions: { type: [ContributionSchema], default: [] },
   subscriptions: { type: [SubscriptionSchema], default: [] },
+  budgetLimits: { type: [BudgetLimitSchema], default: [] },
 }, { timestamps: true })
 
 if (mongoose.models.Group) mongoose.deleteModel('Group')

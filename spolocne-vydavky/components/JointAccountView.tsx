@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, TrendingDown, PiggyBank, Users, BarChart2, Download, KeyRound } from 'lucide-react'
+import { Plus, PiggyBank, Users, BarChart2, KeyRound, SlidersHorizontal, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
-import type { Group, Expense } from '@/types'
+import type { Group, Expense, BudgetLimit } from '@/types'
 import { useLang } from '@/lib/use-lang'
+import BudgetLimitsSheet from '@/components/BudgetLimitsSheet'
 
 export default function JointAccountView({
   group,
@@ -35,17 +36,40 @@ export default function JointAccountView({
     contributed: m.contributed ?? 0,
   }))
   const [showAllExpenses, setShowAllExpenses] = useState(false)
+  const [budgetLimitsOpen, setBudgetLimitsOpen] = useState(false)
+  const [budgetLimits, setBudgetLimits] = useState<BudgetLimit[]>(group.budgetLimits ?? [])
+
+  const getLimitForCat = (cat: string) => budgetLimits.find(l => l.category === cat)
+
+  // filter to current month for budget comparison
+  const now = new Date()
+  const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const thisMonthExpenses = expenses.filter(e => e.date.slice(0, 7) === ym)
 
   const totalContributed = contributions.reduce((s, c) => s + c.contributed, 0)
   const totalSpent = expenses.reduce((s, e) => s + e.amount, 0)
 
   const recentExpenses = showAllExpenses ? expenses : expenses.slice(0, 5)
 
-  // top categories
+  // top categories (current month for limit comparison)
   const catMap: Record<string, number> = {}
   for (const e of expenses) catMap[e.category] = (catMap[e.category] ?? 0) + e.amount
+  const catMapMonth: Record<string, number> = {}
+  for (const e of thisMonthExpenses) catMapMonth[e.category] = (catMapMonth[e.category] ?? 0) + e.amount
+
   const topCats = Object.entries(catMap)
-    .map(([cat, amount]) => ({ cat, amount, pct: totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0, ...catMeta(cat) }))
+    .map(([cat, amount]) => {
+      const limit = getLimitForCat(cat)
+      const monthSpent = catMapMonth[cat] ?? 0
+      const limitPct = limit ? Math.min(Math.round((monthSpent / limit.limitAmount) * 100), 100) : null
+      const isOver = limit ? monthSpent >= limit.limitAmount : false
+      const isNear = limit && !isOver ? monthSpent / limit.limitAmount >= 0.8 : false
+      return {
+        cat, amount, pct: totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0,
+        monthSpent, limit, limitPct, isOver, isNear,
+        ...catMeta(cat),
+      }
+    })
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 3)
 
@@ -54,6 +78,7 @@ export default function JointAccountView({
     { label: t.jointAccount.pay, icon: TrendingDown, action: () => onToast(t.jointAccount.paymentSoon) },
     { label: t.jointAccount.report, icon: BarChart2, href: `/groups/${group.id}/report` },
     { label: t.groupsPage.subscriptions, icon: KeyRound, href: `/groups/${group.id}/subscriptions` },
+    { label: t.budgetLimits.setLimits, icon: SlidersHorizontal, action: () => setBudgetLimitsOpen(true) },
   ]
 
   return (
@@ -89,7 +114,7 @@ export default function JointAccountView({
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-5 gap-2 mb-6">
         {quickActions.map(({ label, icon: Icon, href, action }) => {
           const inner = (
             <>
@@ -166,17 +191,50 @@ export default function JointAccountView({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[14px] font-medium text-white">{c.label}</span>
-                    <span className="text-[14px] font-mono font-semibold text-[#ff3b30]">
-                      – {c.amount.toFixed(2).replace('.', ',')} €
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[14px] font-medium text-white">{c.label}</span>
+                      {c.isOver && (
+                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                          style={{ background: '#ff3b3022', color: '#ff3b30' }}>
+                          <AlertTriangle size={9} />
+                          {t.budgetLimits.overBudget}
+                        </span>
+                      )}
+                      {c.isNear && (
+                        <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold"
+                          style={{ background: '#ff9f0a22', color: '#ff9f0a' }}>
+                          <AlertTriangle size={9} />
+                          {t.budgetLimits.nearLimit}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[14px] font-mono font-semibold text-[#ff3b30]">
+                        – {c.amount.toFixed(2).replace('.', ',')} €
+                      </span>
+                      {c.limit && (
+                        <div className="text-[10px] font-mono mt-0.5" style={{ color: '#8e8e93' }}>
+                          {c.monthSpent.toFixed(0)} / {c.limit.limitAmount.toFixed(0)} € {t.budgetLimits.warningAlert(c.limitPct ?? 0)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 h-1 rounded-full" style={{ background: '#2c2c2e' }}>
-                      <div className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${c.pct}%`, background: c.color }} />
+                    <div className="flex-1 h-1.5 rounded-full" style={{ background: '#2c2c2e' }}>
+                      {c.limit ? (
+                        <div className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${c.limitPct}%`,
+                            background: c.isOver ? '#ff3b30' : c.isNear ? '#ff9f0a' : '#30d158',
+                          }} />
+                      ) : (
+                        <div className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${c.pct}%`, background: c.color }} />
+                      )}
                     </div>
-                    <span className="text-[11px] font-medium flex-shrink-0" style={{ color: c.color }}>{c.pct}%</span>
+                    <span className="text-[11px] font-medium flex-shrink-0" style={{ color: c.isOver ? '#ff3b30' : c.isNear ? '#ff9f0a' : c.color }}>
+                      {c.limit ? `${c.limitPct}%` : `${c.pct}%`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -234,6 +292,19 @@ export default function JointAccountView({
           </div>
         )}
       </div>
+
+      {budgetLimitsOpen && (
+        <BudgetLimitsSheet
+          groupId={group.id}
+          initial={budgetLimits}
+          onClose={() => setBudgetLimitsOpen(false)}
+          onSaved={(limits) => {
+            setBudgetLimits(limits)
+            setBudgetLimitsOpen(false)
+            onToast(t.budgetLimits.saved)
+          }}
+        />
+      )}
     </div>
   )
 }

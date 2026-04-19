@@ -21,7 +21,10 @@ export async function connectDB() {
   if (!uri) throw new Error("MONGODB_URI is not defined");
   if (cache.conn) return cache.conn;
   if (!cache.promise) {
-    cache.promise = mongoose.connect(uri, { serverSelectionTimeoutMS: 30000 }).then((m) => m);
+    cache.promise = mongoose.connect(uri, { serverSelectionTimeoutMS: 30000, bufferTimeoutMS: 35000 }).then((m) => m).catch((err) => {
+      cache.promise = null;
+      throw err;
+    });
   }
   cache.conn = await cache.promise;
   return cache.conn;
