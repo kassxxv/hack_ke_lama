@@ -24,7 +24,10 @@ export default function GroupsPage() {
   const [loading, setLoading] = useState(true)
   const [groupLoading, setGroupLoading] = useState(false)
   const [toast, setToast] = useState('')
+  const [nudgedIds, setNudgedIds] = useState<Set<string>>(new Set())
+  const [showAllDebts, setShowAllDebts] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const pendingSettleRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
   useEffect(() => {
     fetch('/api/groups')
@@ -129,6 +132,7 @@ export default function GroupsPage() {
         </div>
       )}
 
+
       <div className="px-4 pt-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
@@ -225,45 +229,49 @@ export default function GroupsPage() {
 
             {!groupLoading && selectedGroup && selectedGroup.type === 'peers' && (
               <>
-                {/* Balance */}
-                <div className="text-center mb-6">
-                  <div className="text-[13px] mb-1.5" style={{ color: '#8e8e93' }}>Tvoje saldo</div>
-                  <div className="flex items-baseline justify-center gap-2">
-                    <span className={`text-[42px] font-bold tracking-tight leading-none
-                      ${balance > 0 ? 'text-[#30d158]' : balance < 0 ? 'text-[#ff3b30]' : 'text-white'}`}>
-                      {balance > 0 ? '+' : ''}{Math.abs(balance).toFixed(2).replace('.', ',')}
-                    </span>
-                    <span className="text-[22px] font-semibold" style={{ color: '#8e8e93' }}>EUR</span>
+                {/* Hero — only show balance if non-zero, else show group total */}
+                {balance !== 0 ? (
+                  <div className="text-center mb-5">
+                    <div className="text-[13px] mb-1.5" style={{ color: '#8e8e93' }}>
+                      {balance > 0 ? 'Dlhujú ti' : 'Dlhuješ ty'}
+                    </div>
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className={`text-[42px] font-bold tracking-tight leading-none ${balance > 0 ? 'text-[#30d158]' : 'text-[#ff3b30]'}`}>
+                        {balance > 0 ? '+' : '–'}{Math.abs(balance).toFixed(2).replace('.', ',')}
+                      </span>
+                      <span className="text-[22px] font-semibold" style={{ color: '#8e8e93' }}>EUR</span>
+                    </div>
                   </div>
-                  <div className="text-[12px] mt-1.5" style={{ color: '#8e8e93' }}>
-                    {balance > 0 ? 'Ostatní ti dlhujú' : balance < 0 ? 'Dlhuješ ostatným' : 'Vyrovnaný ✓'}
+                ) : (
+                  <div className="text-center mb-5">
+                    <div className="text-[13px] mb-1" style={{ color: '#8e8e93' }}>Skupina minula celkom</div>
+                    <div className="flex items-baseline justify-center gap-2">
+                      <span className="text-[38px] font-bold tracking-tight leading-none text-white">
+                        {totalExpenses.toFixed(2).replace('.', ',')}
+                      </span>
+                      <span className="text-[20px] font-semibold" style={{ color: '#8e8e93' }}>EUR</span>
+                    </div>
+                    <div className="text-[12px] mt-1" style={{ color: '#30d158' }}>Všetko vyrovnané ✓</div>
                   </div>
-                </div>
+                )}
 
-                {/* Stats bars */}
-                <div className="rounded-2xl p-4 mb-6" style={{ background: '#1c1c1e' }}>
-                  <StatBar
-                    label="Celkové výdavky"
-                    value={`${totalExpenses.toFixed(2).replace('.', ',')} EUR`}
-                    pct={100}
-                    color="#0a84ff"
-                  />
-                  <div style={{ height: '0.5px', background: '#38383a', margin: '10px 0' }} />
-                  <StatBar
-                    label="Vyrovnané"
-                    value={`${settledAmount.toFixed(2).replace('.', ',')} EUR`}
-                    pct={settledPct}
-                    color="#8e8e93"
-                  />
-                  <div style={{ height: '0.5px', background: '#38383a', margin: '10px 0' }} />
-                  <StatBar
-                    label="Zostatok"
-                    value={`${balance > 0 ? '+' : ''}${balance.toFixed(2).replace('.', ',')} EUR`}
-                    pct={Math.min(Math.abs(balance) / (totalExpenses || 1) * 100, 100)}
-                    color={balance >= 0 ? '#30d158' : '#ff3b30'}
-                    valueColor={balance > 0 ? '#30d158' : balance < 0 ? '#ff3b30' : '#ffffff'}
-                  />
-                </div>
+                {/* Compact 2-stat strip — only when there's something to show */}
+                {totalExpenses > 0 && balance !== 0 && (
+                  <div className="flex gap-3 mb-5">
+                    <div className="flex-1 rounded-2xl px-4 py-3 text-center" style={{ background: '#1c1c1e' }}>
+                      <div className="text-[11px] mb-1" style={{ color: '#8e8e93' }}>Skupina minula</div>
+                      <div className="text-[15px] font-semibold font-mono text-white">
+                        {totalExpenses.toFixed(2).replace('.', ',')} €
+                      </div>
+                    </div>
+                    <div className="flex-1 rounded-2xl px-4 py-3 text-center" style={{ background: '#1c1c1e' }}>
+                      <div className="text-[11px] mb-1" style={{ color: '#8e8e93' }}>Môj podiel</div>
+                      <div className="text-[15px] font-semibold font-mono text-white">
+                        {(totalExpenses / (selectedGroup.members.length || 1)).toFixed(2).replace('.', ',')} €
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Quick Actions */}
                 <div className="mb-6">
@@ -367,49 +375,66 @@ export default function GroupsPage() {
                 {/* Debts — only for non-temporary friends groups */}
                 {!selectedGroup.isTemporary && debts.length > 0 && (
                   <div className="mb-6">
-                    <div className="text-[15px] font-bold text-white mb-3">Kto komu dlhuje</div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[15px] font-bold text-white">Dlhy</span>
+                      {debts.length > 2 && (
+                        <button onClick={() => setShowAllDebts(v => !v)} className="text-[13px]" style={{ color: '#0a84ff' }}>
+                          {showAllDebts ? 'Zobraziť menej' : `Zobraziť všetky (${debts.length})`}
+                        </button>
+                      )}
+                    </div>
                     <div className="space-y-2">
-                      {debts.map((d, i) => {
+                      {(showAllDebts ? debts : debts.slice(0, 2)).map((d) => {
                         const isMeDebtor = d.fromId === ME
                         const isMeCreditor = d.toId === ME
                         return (
-                          <div key={i} className="rounded-2xl p-4"
-                            style={{ background: '#1c1c1e', border: (isMeDebtor || isMeCreditor) ? '1px solid #0a84ff33' : 'none' }}>
+                          <div key={`${d.fromId}-${d.toId}`} className="rounded-2xl p-4"
+                            style={{ background: '#1c1c1e', border: (isMeDebtor || isMeCreditor) ? `1px solid ${isMeDebtor ? '#ff3b3033' : '#30d15833'}` : 'none' }}>
+                            {/* Who → who + amount */}
                             <div className="flex items-center gap-2 mb-3">
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0"
+                              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold text-white flex-shrink-0"
                                 style={{ background: d.fromColor }}>
                                 {d.fromName.charAt(0)}
                               </div>
-                              <span className="text-[14px] font-semibold text-white">
-                                {isMeDebtor ? 'Ty' : d.fromName.split(' ')[0]}
-                              </span>
-                              <ArrowRight size={14} color="#8e8e93" />
-                              <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-bold text-white flex-shrink-0"
-                                style={{ background: d.toColor }}>
-                                {d.toName.charAt(0)}
+                              <div className="flex-1 min-w-0">
+                                <div className="text-[14px] font-semibold text-white">
+                                  {isMeDebtor ? 'Ty' : d.fromName.split(' ')[0]}
+                                  <span className="font-normal mx-1.5" style={{ color: '#8e8e93' }}>→</span>
+                                  {isMeCreditor ? 'Tebe' : d.toName.split(' ')[0]}
+                                </div>
+                                <div className="text-[11px] mt-0.5" style={{ color: '#8e8e93' }}>
+                                  {d.amount.toFixed(2).replace('.', ',')} € · nevyrovnané
+                                </div>
                               </div>
-                              <span className="text-[14px] font-semibold text-white flex-1">
-                                {isMeCreditor ? 'Tebe' : d.toName.split(' ')[0]}
-                              </span>
-                              <span className={`text-[15px] font-mono font-semibold
-                                ${isMeDebtor ? 'text-[#ff3b30]' : isMeCreditor ? 'text-[#30d158]' : 'text-white'}`}>
+                              <span className={`text-[18px] font-mono font-bold flex-shrink-0 ${isMeDebtor ? 'text-[#ff3b30]' : isMeCreditor ? 'text-[#30d158]' : 'text-white'}`}>
                                 {d.amount.toFixed(2).replace('.', ',')} €
                               </span>
                             </div>
-                            {(isMeDebtor || isMeCreditor) && (
-                              <button
-                                onClick={async () => {
+                            {/* Nudge button */}
+                            <button
+                              disabled={nudgedIds.has(d.fromId)}
+                              onClick={() => {
+                                const key = d.fromId
+                                if (pendingSettleRef.current.has(key)) return
+                                setNudgedIds(prev => new Set(prev).add(key))
+                                setToast(`Pripomienka odoslaná ${d.fromName.split(' ')[0]} 🔔`)
+                                const delay = 5000 + Math.random() * 10000
+                                const t = setTimeout(async () => {
+                                  pendingSettleRef.current.delete(key)
                                   await settleDebt(selectedGroup.id, d.fromId, d.toId)
                                   await loadGroup(selectedGroup.id)
-                                  setToast('Dlh vyrovnaný ✓')
-                                }}
-                                className="w-full py-2.5 rounded-xl text-[13px] font-semibold text-white"
-                                style={{ background: '#0a84ff' }}>
-                                {isMeDebtor
-                                  ? `Vyrovnať · ${d.amount.toFixed(2).replace('.', ',')} €`
-                                  : `Vyžiadať · ${d.amount.toFixed(2).replace('.', ',')} €`}
-                              </button>
-                            )}
+                                  setToast(`${d.fromName.split(' ')[0]} zaplatil ${d.amount.toFixed(2).replace('.', ',')} € ✓`)
+                                }, delay)
+                                pendingSettleRef.current.set(key, t)
+                              }}
+                              className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all"
+                              style={nudgedIds.has(d.fromId)
+                                ? { background: '#2c2c2e', color: '#8e8e93', border: '1px solid #38383a' }
+                                : { background: '#ff9f0a22', color: '#ff9f0a', border: '1px solid #ff9f0a44' }}>
+                              {nudgedIds.has(d.fromId)
+                                ? 'Čaká na platbu...'
+                                : <><span className="bell-shake inline-block">🔔</span> Pripomenuté</>}
+                            </button>
                           </div>
                         )
                       })}

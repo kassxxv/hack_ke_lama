@@ -65,47 +65,33 @@ export async function GET() {
   ])
 
   await ExpenseModel.insertMany([
-    // Priatelia expenses (friends — who owes who)
+    // Priatelia expenses — Filip pays, Tomáš and Lucia each owe him cleanly
     {
       groupId: bytak._id,
-      amount: 60,
+      amount: 75,
       paidBy: filip._id.toString(),
       merchant: 'Pizza Hut',
       date: '2026-04-05',
       isPersonal: false,
       category: 'food',
       splits: [
+        { userId: filip._id.toString(), amount: 25, settled: true },
+        { userId: u4.userId, amount: 25, settled: false },
+        { userId: u5.userId, amount: 25, settled: false },
+      ],
+    },
+    {
+      groupId: bytak._id,
+      amount: 60,
+      paidBy: filip._id.toString(),
+      merchant: 'Koliba — večera',
+      date: '2026-04-12',
+      isPersonal: false,
+      category: 'food',
+      splits: [
         { userId: filip._id.toString(), amount: 20, settled: true },
         { userId: u4.userId, amount: 20, settled: false },
         { userId: u5.userId, amount: 20, settled: false },
-      ],
-    },
-    {
-      groupId: bytak._id,
-      amount: 45,
-      paidBy: u4.userId,
-      merchant: 'Cinema City',
-      date: '2026-04-10',
-      isPersonal: false,
-      category: 'entertainment',
-      splits: [
-        { userId: filip._id.toString(), amount: 15, settled: false },
-        { userId: u4.userId, amount: 15, settled: true },
-        { userId: u5.userId, amount: 15, settled: false },
-      ],
-    },
-    {
-      groupId: bytak._id,
-      amount: 36,
-      paidBy: u5.userId,
-      merchant: 'Uber — taxík',
-      date: '2026-04-12',
-      isPersonal: false,
-      category: 'transport',
-      splits: [
-        { userId: filip._id.toString(), amount: 12, settled: false },
-        { userId: u4.userId, amount: 12, settled: false },
-        { userId: u5.userId, amount: 12, settled: true },
       ],
     },
     // Rodina expenses (joint)
