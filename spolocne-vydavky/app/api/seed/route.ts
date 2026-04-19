@@ -85,7 +85,11 @@ export async function GET() {
       type: 'peers',
       emoji: '👫',
       isTemporary: false,
-      members: [filipMember, u4, u5],
+      members: [
+        { ...filipMember, role: 'admin' },
+        { ...u4, role: 'member' },
+        { ...u5, role: 'member' },
+      ],
       subscriptions: [
         {
           name: 'Claude Pro',
@@ -114,7 +118,12 @@ export async function GET() {
       type: 'peers',
       emoji: '✈️',
       isTemporary: true,
-      members: [filipMember, u2, u4, u5],
+      members: [
+        { ...filipMember, role: 'admin' },
+        { ...u2, role: 'member' },
+        { ...u4, role: 'member' },
+        { ...u5, role: 'member' },
+      ],
     },
   ])
 

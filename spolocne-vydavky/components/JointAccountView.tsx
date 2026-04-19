@@ -11,11 +11,13 @@ export default function JointAccountView({
   expenses,
   currentUserId,
   onToast,
+  onManageMembers,
 }: {
   group: Group
   expenses: Expense[]
   currentUserId: string
   onToast: (msg: string) => void
+  onManageMembers: () => void
 }) {
   const { t } = useLang()
   const CAT_META: Record<string, { label: string; color: string; emoji: string }> = {
@@ -52,7 +54,7 @@ export default function JointAccountView({
 
   const quickActions = [
     { label: t.jointAccount.contribute, icon: PiggyBank, action: () => onToast(t.jointAccount.contributionSoon) },
-    { label: t.groupsPage.membersMgmt, icon: Users, action: () => onToast(t.groupsPage.membersSoon) },
+    { label: t.groupsPage.membersMgmt, icon: Users, action: onManageMembers },
     { label: t.jointAccount.report, icon: BarChart2, href: `/groups/${group.id}/report` },
     { label: t.groupsPage.subscriptions, icon: KeyRound, href: `/groups/${group.id}/subscriptions` },
   ]
