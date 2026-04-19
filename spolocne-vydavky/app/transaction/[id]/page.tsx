@@ -12,6 +12,12 @@ const TRANSACTIONS = [
   { id: 't3', merchant: 'Tatranská Lomnica', amount: -89.00, date: '16. apríl 2026', category: 'Zábava', canSplit: true },
   { id: 't4', merchant: 'Lidl Košice', amount: -23.45, date: '15. apríl 2026', category: 'Potraviny', canSplit: true },
   { id: 't5', merchant: 'Netflix', amount: -15.99, date: '1. apríl 2026', category: 'Predplatné', canSplit: false },
+  { id: 't6', merchant: 'Billa Košice', amount: -34.72, date: '28. marec 2026', category: 'Potraviny', canSplit: true },
+  { id: 't7', merchant: 'Slovnaft — Prešov', amount: -52.40, date: '22. marec 2026', category: 'Doprava', canSplit: true },
+  { id: 't8', merchant: 'Reštaurácia Hradná', amount: -64.80, date: '15. marec 2026', category: 'Zábava', canSplit: true },
+  { id: 't9', merchant: 'Tesco Extra', amount: -28.19, date: '10. marec 2026', category: 'Potraviny', canSplit: true },
+  { id: 't10', merchant: 'O2 Slovakia', amount: -19.99, date: '5. marec 2026', category: 'Služby', canSplit: false },
+  { id: 't11', merchant: 'Spotify', amount: -9.99, date: '1. marec 2026', category: 'Predplatné', canSplit: false },
 ]
 
 export default function TransactionPage({ params }: { params: Promise<{ id: string }> }) {

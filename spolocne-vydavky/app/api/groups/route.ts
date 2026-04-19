@@ -21,29 +21,34 @@ function calcBalances(members: { userId: string; name: string; phone: string; av
 }
 
 export async function GET() {
-  await connectDB()
-  const groups = await GroupModel.find().lean()
-  const result = await Promise.all(groups.map(async (g) => {
-    const expenses = await ExpenseModel.find({ groupId: g._id }).lean()
-    const balances = calcBalances(g.members as Parameters<typeof calcBalances>[0], expenses as Parameters<typeof calcBalances>[1])
-    return {
-      id: g._id.toString(),
-      name: g.name,
-      type: g.type,
-      emoji: g.emoji,
-      isTemporary: g.isTemporary,
-      potBalance: (g as typeof g & { potBalance?: number }).potBalance ?? 0,
-      potTarget: (g as typeof g & { potTarget?: number }).potTarget ?? null,
-      members: (g.members as { userId: string; name: string; phone: string; avatarColor: string; role: string; contributed?: number }[]).map(m => ({
-        user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor },
-        role: m.role,
-        balance: balances[m.userId] ?? 0,
-        contributed: m.contributed ?? 0,
-      })),
-      totalOwed: Object.values(balances).filter(b => b > 0).reduce((s, b) => s + b, 0),
-    }
-  }))
-  return NextResponse.json(result)
+  try {
+    await connectDB()
+    const groups = await GroupModel.find().lean()
+    const result = await Promise.all(groups.map(async (g) => {
+      const expenses = await ExpenseModel.find({ groupId: g._id }).lean()
+      const balances = calcBalances(g.members as Parameters<typeof calcBalances>[0], expenses as Parameters<typeof calcBalances>[1])
+      return {
+        id: g._id.toString(),
+        name: g.name,
+        type: g.type,
+        emoji: g.emoji,
+        isTemporary: g.isTemporary,
+        potBalance: (g as typeof g & { potBalance?: number }).potBalance ?? 0,
+        potTarget: (g as typeof g & { potTarget?: number }).potTarget ?? null,
+        members: (g.members as { userId: string; name: string; phone: string; avatarColor: string; role: string; contributed?: number }[]).map(m => ({
+          user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor },
+          role: m.role,
+          balance: balances[m.userId] ?? 0,
+          contributed: m.contributed ?? 0,
+        })),
+        totalOwed: Object.values(balances).filter(b => b > 0).reduce((s, b) => s + b, 0),
+      }
+    }))
+    return NextResponse.json(result)
+  } catch (err) {
+    console.error('[GET /api/groups]', err)
+    return NextResponse.json({ error: 'Database error' }, { status: 500 })
+  }
 }
 
 export async function POST(req: NextRequest) {

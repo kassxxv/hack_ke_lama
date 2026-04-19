@@ -24,6 +24,7 @@ function calcBalances(
 }
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
   await connectDB()
   const { id } = await params
   const group = await GroupModel.findById(id).lean() as { _id: { toString(): string }; name: string; type: string; emoji: string; isTemporary: boolean; members: { userId: string; name: string; phone: string; avatarColor: string; role: string }[] } | null
@@ -63,4 +64,8 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   }))
 
   return NextResponse.json({ group: result, expenses })
+  } catch (err) {
+    console.error('[GET /api/groups/[id]]', err)
+    return NextResponse.json({ error: 'Database error' }, { status: 500 })
+  }
 }
