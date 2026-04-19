@@ -52,7 +52,7 @@ export default function JointAccountView({
 
   const quickActions = [
     { label: t.jointAccount.contribute, icon: PiggyBank, action: () => onToast(t.jointAccount.contributionSoon) },
-    { label: t.groupsPage.membersMgmt, icon: Users, action: () => onToast(t.groupsPage.membersSoon) },
+    { label: t.groupsPage.membersMgmt, icon: Users, href: `/groups/${group.id}/members` },
     { label: t.jointAccount.report, icon: BarChart2, href: `/groups/${group.id}/report` },
     { label: t.groupsPage.subscriptions, icon: KeyRound, href: `/groups/${group.id}/subscriptions` },
   ]
