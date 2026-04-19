@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
 import JointAccountView from '@/components/JointAccountView'
+import ManageMembersSheet from '@/components/ManageMembersSheet'
 import { calculateDebts } from '@/lib/debt'
 import { settleDebt } from '@/lib/api'
 import {
@@ -610,6 +611,14 @@ export default function GroupsPage() {
         )}
       </div>
 
+    {manageMembersOpen && selectedGroup && (
+      <ManageMembersSheet
+        groupId={selectedGroup.id}
+        currentUserId={ME}
+        onClose={() => setManageMembersOpen(false)}
+        onChanged={(msg) => { setToast(msg); setManageMembersOpen(false); loadGroup(selectedGroup.id) }}
+      />
+    )}
     </TBShell>
   )
 }
