@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useStore } from '@/lib/store'
 import type { Group } from '@/types'
 import type { ScannedReceipt } from '@/app/api/scan-receipt/route'
+import { useLang } from '@/lib/use-lang'
 
 type BillItem = {
   id: string
@@ -41,6 +42,7 @@ function ScanBillInner() {
   const router = useRouter()
   const groupId = searchParams.get('groupId') ?? ''
   const { state } = useStore()
+  const { t } = useLang()
   const ME = state.currentUser?.id ?? ''
 
   const [group, setGroup] = useState<Group | null>(null)
@@ -79,9 +81,9 @@ function ScanBillInner() {
       setMerchant(data.merchant)
       setReceiptDate(data.date)
       setScanned(true)
-      setToast('Účet naskenovaný ✓')
+      setToast(t.scanBill.scanSuccess)
     } catch {
-      setToast('Skenovanie zlyhalo — použijem mock dáta')
+      setToast(t.scanBill.scanFail)
     } finally {
       setScanning(false)
     }
@@ -144,7 +146,7 @@ function ScanBillInner() {
       })
       router.push('/groups')
     } catch {
-      setToast('Chyba pri ukladaní')
+      setToast(t.scanBill.saveError)
       setSaving(false)
     }
   }
@@ -174,7 +176,7 @@ function ScanBillInner() {
             <ChevronLeft size={22} color="#0a84ff" strokeWidth={2.2} />
           </Link>
           <h1 className="text-[17px] font-semibold text-white absolute left-1/2 -translate-x-1/2">
-            Rozdeliť účet
+            {t.scanBill.title}
           </h1>
         </div>
 
@@ -200,14 +202,14 @@ function ScanBillInner() {
             style={{ background: '#0a84ff22', color: '#0a84ff' }}
           >
             <Upload size={13} strokeWidth={2} />
-            {scanned ? 'Znova' : 'Skenovať'}
+            {scanned ? t.scanBill.scanAgain : t.scanBill.scanCta}
           </button>
         </div>
 
         {scanning && (
           <div className="flex items-center justify-center gap-3 py-6">
             <Loader2 size={20} color="#0a84ff" className="animate-spin" />
-            <span className="text-[14px]" style={{ color: '#8e8e93' }}>Analyzujem účet...</span>
+            <span className="text-[14px]" style={{ color: '#8e8e93' }}>{t.scanBill.scanning}</span>
           </div>
         )}
 
@@ -224,7 +226,7 @@ function ScanBillInner() {
                       {m.user.name.charAt(0)}
                     </div>
                     <span className="text-[12px] font-medium text-white">
-                      {m.user.id === ME ? 'Ty' : m.user.name.split(' ')[0]}
+                      {m.user.id === ME ? t.common.you : m.user.name.split(' ')[0]}
                     </span>
                   </div>
                 ))}
@@ -234,7 +236,7 @@ function ScanBillInner() {
             {/* Items */}
             <div className="mb-5">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[15px] font-bold text-white">Položky</span>
+                <span className="text-[15px] font-bold text-white">{t.scanBill.items}</span>
                 <button
                   onClick={() => {
                     if (!group) return
@@ -242,7 +244,7 @@ function ScanBillInner() {
                     setItems(prev => prev.map(i => ({ ...i, assignedTo: allIds })))
                   }}
                   className="text-[13px]" style={{ color: '#0a84ff' }}>
-                  Priradiť všetkým
+                  {t.scanBill.assignAll}
                 </button>
               </div>
 
@@ -283,7 +285,7 @@ function ScanBillInner() {
                               }}
                             >
                               <span className="text-[11px] font-semibold text-white">
-                                {m.user.id === ME ? 'Ty' : m.user.name.split(' ')[0]}
+                                {m.user.id === ME ? t.common.you : m.user.name.split(' ')[0]}
                               </span>
                               {assigned && <Check size={10} color="#fff" strokeWidth={3} />}
                             </button>
@@ -298,7 +300,7 @@ function ScanBillInner() {
                             border: '1.5px solid #38383a',
                           }}
                         >
-                          Všetci
+                          {t.scanBill.everyone}
                         </button>
                       </div>
                     </div>
@@ -310,7 +312,7 @@ function ScanBillInner() {
             {/* Per-person summary */}
             {members.length > 0 && (
               <div className="rounded-2xl p-4 mb-5" style={{ background: '#1c1c1e' }}>
-                <div className="text-[13px] font-bold text-white mb-3">Súhrn na osobu</div>
+                <div className="text-[13px] font-bold text-white mb-3">{t.scanBill.perPersonSummary}</div>
                 <div className="space-y-2.5">
                   {members.map(m => {
                     const amt = totals[m.user.id] ?? 0
@@ -321,7 +323,7 @@ function ScanBillInner() {
                           {m.user.name.charAt(0)}
                         </div>
                         <span className="text-[13px] font-medium text-white flex-1">
-                          {m.user.id === ME ? 'Ty' : m.user.name.split(' ')[0]}
+                          {m.user.id === ME ? t.common.you : m.user.name.split(' ')[0]}
                         </span>
                         <div className="flex-1 mx-2">
                           <div className="h-1 rounded-full" style={{ background: '#2c2c2e' }}>
@@ -338,7 +340,7 @@ function ScanBillInner() {
                 </div>
                 {unassigned > 0.01 && (
                   <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: '0.5px solid #38383a' }}>
-                    <span className="text-[12px]" style={{ color: '#ff9f0a' }}>Nepriradené</span>
+                    <span className="text-[12px]" style={{ color: '#ff9f0a' }}>{t.scanBill.unassigned}</span>
                     <span className="text-[13px] font-mono font-semibold" style={{ color: '#ff9f0a' }}>
                       {unassigned.toFixed(2).replace('.', ',')} €
                     </span>
@@ -349,7 +351,7 @@ function ScanBillInner() {
 
             {/* Total row */}
             <div className="flex items-center justify-between mb-6 px-1">
-              <span className="text-[15px] font-bold text-white">Celkom</span>
+              <span className="text-[15px] font-bold text-white">{t.scanBill.total}</span>
               <span className="text-[18px] font-bold font-mono text-white">
                 {billTotal.toFixed(2).replace('.', ',')} €
               </span>
@@ -362,7 +364,7 @@ function ScanBillInner() {
               className="w-full py-4 rounded-2xl font-semibold text-[16px] transition-all"
               style={{ background: allAssigned && group ? '#0a84ff' : '#2c2c2e', color: allAssigned && group ? '#fff' : '#8e8e93' }}
             >
-              {saving ? 'Ukladám...' : !allAssigned ? `Priraď všetky položky (${unassignedCount})` : 'Vytvoriť výdavok'}
+              {saving ? t.scanBill.saving : !allAssigned ? t.scanBill.assignRemaining(unassignedCount) : t.scanBill.createExpense}
             </button>
           </>
         )}

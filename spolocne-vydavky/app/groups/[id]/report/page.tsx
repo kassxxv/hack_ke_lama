@@ -5,51 +5,29 @@ import TBShell from '@/components/TBShell'
 import { ChevronLeft, ChevronDown, MoreVertical } from 'lucide-react'
 import Link from 'next/link'
 import type { Expense } from '@/types'
+import { useLang } from '@/lib/use-lang'
 
-const CATEGORY_META: Record<string, { label: string; color: string; emoji: string }> = {
-  food:          { label: 'Jedlo',        color: '#ff3b30', emoji: '🍽️' },
-  groceries:     { label: 'Nákup',        color: '#ffd60a', emoji: '🛒' },
-  transport:     { label: 'Doprava',      color: '#30d158', emoji: '🎮' },
-  entertainment: { label: 'Zábava',       color: '#0a84ff', emoji: '📱' },
-  housing:       { label: 'Bývanie',      color: '#bf5af2', emoji: '🏠' },
-  other:         { label: 'Ostatné',      color: '#ff9f0a', emoji: '💡' },
-}
-
-function categoryMeta(cat: string) {
-  return CATEGORY_META[cat] ?? { label: cat, color: '#8e8e93', emoji: '💰' }
-}
-
-type MonthKey = string // 'YYYY-MM'
+type MonthKey = string
 
 function toMonthKey(date: string): MonthKey {
   return date.slice(0, 7)
 }
 
-function monthLabel(key: MonthKey): string {
-  const [y, m] = key.split('-')
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Máj', 'Jún', 'Júl', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec']
-  return `${months[parseInt(m) - 1]} ${y}`
-}
-
-function fullMonthLabel(key: MonthKey): string {
-  const [y, m] = key.split('-')
-  const months = ['Január', 'Február', 'Marec', 'Apríl', 'Máj', 'Jún', 'Júl', 'August', 'September', 'Október', 'November', 'December']
-  return `${months[parseInt(m) - 1]} ${y}`
-}
-
-// SVG donut chart
+// SVG donut chart — labels rendered as SVG text to stay in the same coordinate space
 function DonutChart({ segments }: { segments: { pct: number; color: string; label: string; emoji: string }[] }) {
-  const R = 90
-  const STROKE = 40
-  const CX = 140
-  const CY = 140
+  const R = 82
+  const STROKE = 36
+  const CX = 160
+  const CY = 160
+  const SIZE = 320
+  const LABEL_R = R + STROKE / 2 + 26
   const circumference = 2 * Math.PI * R
 
   let cumPct = 0
   const arcs = segments.map(s => {
     const start = cumPct
     cumPct += s.pct
-    return { ...s, start, end: cumPct }
+    return { ...s, start }
   })
 
   function polarToCart(pct: number, r: number) {
@@ -58,8 +36,13 @@ function DonutChart({ segments }: { segments: { pct: number; color: string; labe
   }
 
   return (
-    <div className="relative flex items-center justify-center" style={{ height: 300 }}>
-      <svg width={280} height={280} viewBox="0 0 280 280">
+    <div className="mx-auto" style={{ width: SIZE, maxWidth: '100%' }}>
+      <svg
+        width={SIZE} height={SIZE}
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        style={{ width: '100%', height: 'auto' }}
+      >
+        {/* Ring segments */}
         {arcs.map((arc, i) => {
           const startDash = (arc.start / 100) * circumference
           const segDash = (arc.pct / 100) * circumference
@@ -76,61 +59,66 @@ function DonutChart({ segments }: { segments: { pct: number; color: string; labe
             />
           )
         })}
-        {/* inner black hole */}
-        <circle cx={CX} cy={CY} r={R - STROKE / 2 - 2} fill="#000000" />
+
+        {/* Inner hole */}
+        <circle cx={CX} cy={CY} r={R - STROKE / 2 - 3} fill="#000000" />
+
+        {/* Labels — inside SVG so coordinate space matches exactly */}
+        {arcs.map((arc, i) => {
+          if (arc.pct < 6) return null
+          const midPct = arc.start + arc.pct / 2
+          const pos = polarToCart(midPct, LABEL_R)
+          return (
+            <g key={i}>
+              <text
+                x={pos.x} y={pos.y - 7}
+                textAnchor="middle" dominantBaseline="middle"
+                fontSize="17"
+              >
+                {arc.emoji}
+              </text>
+              <text
+                x={pos.x} y={pos.y + 11}
+                textAnchor="middle" dominantBaseline="middle"
+                fontSize="11" fontWeight="700" fill={arc.color}
+              >
+                {arc.pct}%
+              </text>
+            </g>
+          )
+        })}
       </svg>
-
-      {/* floating category labels */}
-      {arcs.map((arc, i) => {
-        const midPct = arc.start + arc.pct / 2
-        const labelR = R + STROKE / 2 + 36
-        const pos = polarToCart(midPct, labelR)
-        const pxFromCenter = pos.x - CX
-        const pyFromCenter = pos.y - CY
-        const isLeft = pxFromCenter < 0
-
-        return (
-          <div
-            key={i}
-            className="absolute flex items-center gap-1.5 pointer-events-none"
-            style={{
-              left: pos.x + (isLeft ? -72 : 8),
-              top: pos.y - 12,
-              minWidth: 60,
-            }}
-          >
-            {isLeft ? (
-              <>
-                <span className="text-[13px] font-semibold" style={{ color: arc.color }}>{arc.pct}%</span>
-                <span className="w-7 h-7 rounded-full flex items-center justify-center text-[14px] flex-shrink-0"
-                  style={{ background: arc.color + '33' }}>
-                  {arc.emoji}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="w-7 h-7 rounded-full flex items-center justify-center text-[14px] flex-shrink-0"
-                  style={{ background: arc.color + '33' }}>
-                  {arc.emoji}
-                </span>
-                <span className="text-[13px] font-semibold" style={{ color: arc.color }}>{arc.pct}%</span>
-              </>
-            )}
-          </div>
-        )
-      })}
     </div>
   )
 }
 
 export default function SpendingReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
+  const { t } = useLang()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedMonth, setSelectedMonth] = useState<MonthKey>('')
   const [monthDropOpen, setMonthDropOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<'categories' | 'transactions'>('categories')
   const monthScrollRef = useRef<HTMLDivElement>(null)
+
+  const CAT_META: Record<string, { label: string; color: string; emoji: string }> = {
+    food:          { label: t.categories.food,          color: '#ff3b30', emoji: '🍽️' },
+    groceries:     { label: t.categories.groceries,     color: '#ffd60a', emoji: '🛒' },
+    transport:     { label: t.categories.transport,     color: '#30d158', emoji: '🚗' },
+    entertainment: { label: t.categories.entertainment, color: '#0a84ff', emoji: '🎮' },
+    housing:       { label: t.categories.housing,       color: '#bf5af2', emoji: '🏠' },
+    other:         { label: t.categories.other,         color: '#ff9f0a', emoji: '💡' },
+  }
+  const categoryMeta = (cat: string) => CAT_META[cat] ?? { label: cat, color: '#8e8e93', emoji: '💰' }
+  const monthLabel = (key: MonthKey) => {
+    const [y, m] = key.split('-')
+    return `${t.report.monthsShort[parseInt(m) - 1]} ${y}`
+  }
+  const fullMonthLabel = (key: MonthKey) => {
+    const [y, m] = key.split('-')
+    return `${t.report.monthsLong[parseInt(m) - 1]} ${y}`
+  }
 
   useEffect(() => {
     fetch(`/api/groups/${id}`)
@@ -146,12 +134,13 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
       .catch(() => setLoading(false))
   }, [id])
 
-  const allMonths = [...new Set(expenses.map(e => toMonthKey(e.date)))].sort()
-  if (allMonths.length === 0) {
-    // default to current month
-    const now = new Date()
-    allMonths.push(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`)
-  }
+  const now = new Date()
+  const last6Months = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  })
+  const expenseMonths = new Set(expenses.map(e => toMonthKey(e.date)))
+  const allMonths = [...new Set([...last6Months, ...expenseMonths])].sort()
 
   const monthExpenses = expenses.filter(e => toMonthKey(e.date) === selectedMonth)
 
@@ -189,7 +178,7 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
   if (loading) {
     return (
       <TBShell>
-        <div className="p-8 text-center" style={{ color: '#8e8e93' }}>Načítavam...</div>
+        <div className="p-8 text-center" style={{ color: '#8e8e93' }}>{t.common.loading}</div>
       </TBShell>
     )
   }
@@ -202,7 +191,7 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
           <Link href="/groups" className="w-8 h-8 flex items-center justify-center">
             <ChevronLeft size={22} color="#0a84ff" strokeWidth={2.2} />
           </Link>
-          <h1 className="text-[17px] font-semibold text-white flex-1 text-center">Správa výdavkov</h1>
+          <h1 className="text-[17px] font-semibold text-white flex-1 text-center">{t.report.title}</h1>
           <button className="w-8 h-8 flex items-center justify-center">
             <MoreVertical size={20} color="#8e8e93" />
           </button>
@@ -221,26 +210,30 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
 
         {/* Month pill scroll */}
         <div ref={monthScrollRef} className="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
-          {allMonths.map(mk => (
-            <button
-              key={mk}
-              data-month={mk}
-              onClick={() => setSelectedMonth(mk)}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-[13px] font-medium transition-all"
-              style={{
-                background: selectedMonth === mk ? '#0a84ff' : 'transparent',
-                color: selectedMonth === mk ? '#ffffff' : '#8e8e93',
-                border: `1.5px solid ${selectedMonth === mk ? '#0a84ff' : '#38383a'}`,
-              }}
-            >
-              {monthLabel(mk)}
-            </button>
-          ))}
+          {allMonths.map(mk => {
+            const hasData = expenseMonths.has(mk)
+            const isActive = selectedMonth === mk
+            return (
+              <button
+                key={mk}
+                data-month={mk}
+                onClick={() => setSelectedMonth(mk)}
+                className="flex-shrink-0 px-4 py-2 rounded-full text-[13px] font-medium transition-all"
+                style={{
+                  background: isActive ? '#0a84ff' : 'transparent',
+                  color: isActive ? '#ffffff' : hasData ? '#ffffff' : '#8e8e93',
+                  border: `1.5px solid ${isActive ? '#0a84ff' : '#38383a'}`,
+                }}
+              >
+                {monthLabel(mk)}
+              </button>
+            )
+          })}
         </div>
 
         {/* Difference + totals */}
         <div className="px-4 mt-2 mb-4">
-          <div className="text-[12px] text-center mb-1" style={{ color: '#8e8e93' }}>Celkové výdavky</div>
+          <div className="text-[12px] text-center mb-1" style={{ color: '#8e8e93' }}>{t.report.totalSpending}</div>
           <div className="text-center flex items-baseline justify-center gap-2 mb-4">
             <span className="text-[40px] font-bold tracking-tight text-[#ff3b30]">
               – {totalSpending.toFixed(2).replace('.', ',')}
@@ -250,13 +243,13 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
 
           <div className="rounded-2xl overflow-hidden flex" style={{ background: '#1c1c1e' }}>
             <div className="flex-1 px-4 py-3 text-center" style={{ borderRight: '0.5px solid #38383a' }}>
-              <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>Výdavky</div>
+              <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>{t.report.expenses}</div>
               <div className="text-[15px] font-semibold text-[#ff3b30]">
                 – {totalSpending.toFixed(2).replace('.', ',')} EUR
               </div>
             </div>
             <div className="flex-1 px-4 py-3 text-center">
-              <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>Položky</div>
+              <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>{t.report.items}</div>
               <div className="text-[15px] font-semibold text-[#30d158]">{monthExpenses.length}</div>
             </div>
           </div>
@@ -268,8 +261,8 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
         ) : (
           <div className="py-12 text-center">
             <div className="text-4xl mb-3">📊</div>
-            <div className="text-[15px] font-medium text-white mb-1">Žiadne výdavky</div>
-            <div className="text-[13px]" style={{ color: '#8e8e93' }}>V tomto mesiaci nie sú žiadne výdavky</div>
+            <div className="text-[15px] font-medium text-white mb-1">{t.report.noExpenses}</div>
+            <div className="text-[13px]" style={{ color: '#8e8e93' }}>{t.report.noExpensesMonth}</div>
           </div>
         )}
 
@@ -283,7 +276,7 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
                 className="flex-1 py-3 text-[14px] font-medium transition-colors"
                 style={{ color: activeTab === tab ? '#ffffff' : '#8e8e93' }}
               >
-                {tab === 'categories' ? 'Kategórie' : 'Transakcie'}
+                {tab === 'categories' ? t.report.categories : t.report.transactions}
               </button>
             ))}
           </div>
@@ -301,12 +294,12 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
           {activeTab === 'categories' ? (
             <>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-white">Kategórie výdavkov</span>
-                <span className="text-[13px]" style={{ color: '#0a84ff' }}>Zobraziť všetky</span>
+                <span className="text-[17px] font-bold text-white">{t.report.expenseCategories}</span>
+                <span className="text-[13px]" style={{ color: '#0a84ff' }}>{t.report.showAll}</span>
               </div>
               {catRows.length === 0 ? (
                 <div className="py-8 text-center text-[14px]" style={{ color: '#8e8e93' }}>
-                  Žiadne kategórie
+                  {t.report.noCategories}
                 </div>
               ) : (
                 <div>
@@ -342,12 +335,12 @@ export default function SpendingReportPage({ params }: { params: Promise<{ id: s
           ) : (
             <>
               <div className="flex items-center justify-between mb-3">
-                <span className="text-[17px] font-bold text-white">Transakcie</span>
+                <span className="text-[17px] font-bold text-white">{t.report.transactions}</span>
                 <span className="text-[13px]" style={{ color: '#8e8e93' }}>{monthExpenses.length}</span>
               </div>
               {monthExpenses.length === 0 ? (
                 <div className="py-8 text-center text-[14px]" style={{ color: '#8e8e93' }}>
-                  Žiadne transakcie
+                  {t.report.noTransactions}
                 </div>
               ) : (
                 <div>

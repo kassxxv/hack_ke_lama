@@ -48,6 +48,7 @@ export default function SettingsPage() {
     setLang(next)
     localStorage.setItem('lang', next)
     document.cookie = `sv_lang=${next}; path=/; max-age=${365 * 24 * 60 * 60}`
+    window.dispatchEvent(new Event('lang-change'))
   }
 
   async function handleLogout() {

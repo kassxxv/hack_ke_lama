@@ -1,23 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, TrendingDown, PiggyBank, Users, BarChart2, Download } from 'lucide-react'
+import { Plus, TrendingDown, PiggyBank, Users, BarChart2, Download, KeyRound } from 'lucide-react'
 import Link from 'next/link'
 import type { Group, Expense } from '@/types'
-
-
-const CAT_META: Record<string, { label: string; color: string; emoji: string }> = {
-  food:          { label: 'Jedlo',     color: '#ff3b30', emoji: '🍽️' },
-  groceries:     { label: 'Nákup',     color: '#ffd60a', emoji: '🛒' },
-  transport:     { label: 'Doprava',   color: '#30d158', emoji: '🚗' },
-  entertainment: { label: 'Zábava',    color: '#0a84ff', emoji: '🎮' },
-  housing:       { label: 'Bývanie',   color: '#bf5af2', emoji: '🏠' },
-  other:         { label: 'Ostatné',   color: '#ff9f0a', emoji: '💡' },
-}
-
-function catMeta(cat: string) {
-  return CAT_META[cat] ?? { label: cat, color: '#8e8e93', emoji: '💰' }
-}
+import { useLang } from '@/lib/use-lang'
 
 export default function JointAccountView({
   group,
@@ -30,6 +17,16 @@ export default function JointAccountView({
   currentUserId: string
   onToast: (msg: string) => void
 }) {
+  const { t } = useLang()
+  const CAT_META: Record<string, { label: string; color: string; emoji: string }> = {
+    food:          { label: t.categories.food,          color: '#ff3b30', emoji: '🍽️' },
+    groceries:     { label: t.categories.groceries,     color: '#ffd60a', emoji: '🛒' },
+    transport:     { label: t.categories.transport,     color: '#30d158', emoji: '🚗' },
+    entertainment: { label: t.categories.entertainment, color: '#0a84ff', emoji: '🎮' },
+    housing:       { label: t.categories.housing,       color: '#bf5af2', emoji: '🏠' },
+    other:         { label: t.categories.other,         color: '#ff9f0a', emoji: '💡' },
+  }
+  const catMeta = (cat: string) => CAT_META[cat] ?? { label: cat, color: '#8e8e93', emoji: '💰' }
   const potBalance = group.potBalance ?? 0
   const contributions = group.members.map(m => ({
     userId: m.user.id,
@@ -53,17 +50,17 @@ export default function JointAccountView({
     .slice(0, 3)
 
   const quickActions = [
-    { label: 'Prispieť', icon: PiggyBank, action: () => onToast('Príspevok do fondu čoskoro') },
-    { label: 'Zaplatiť', icon: TrendingDown, action: () => onToast('Platba z fondu čoskoro') },
-    { label: 'Výdavky', icon: BarChart2, href: `/groups/${group.id}/report` },
-    { label: 'Členovia', icon: Users, action: () => onToast('Správa členov čoskoro') },
+    { label: t.jointAccount.contribute, icon: PiggyBank, action: () => onToast(t.jointAccount.contributionSoon) },
+    { label: t.jointAccount.pay, icon: TrendingDown, action: () => onToast(t.jointAccount.paymentSoon) },
+    { label: t.jointAccount.report, icon: BarChart2, href: `/groups/${group.id}/report` },
+    { label: t.groupsPage.subscriptions, icon: KeyRound, href: `/groups/${group.id}/subscriptions` },
   ]
 
   return (
     <div>
       {/* Pot balance */}
       <div className="text-center mb-6">
-        <div className="text-[13px] mb-1.5" style={{ color: '#8e8e93' }}>Spoločný fond</div>
+        <div className="text-[13px] mb-1.5" style={{ color: '#8e8e93' }}>{t.jointAccount.pot}</div>
         <div className="flex items-baseline justify-center gap-2">
           <span className="text-[42px] font-bold tracking-tight leading-none text-[#30d158]">
             {potBalance.toFixed(2).replace('.', ',')}
@@ -71,20 +68,20 @@ export default function JointAccountView({
           <span className="text-[22px] font-semibold" style={{ color: '#8e8e93' }}>EUR</span>
         </div>
         <div className="text-[12px] mt-1.5" style={{ color: '#8e8e93' }}>
-          Dostupný zostatok
+          {t.jointAccount.available}
         </div>
       </div>
 
       {/* Stats card */}
       <div className="rounded-2xl overflow-hidden flex mb-6" style={{ background: '#1c1c1e' }}>
         <div className="flex-1 px-4 py-3 text-center" style={{ borderRight: '0.5px solid #38383a' }}>
-          <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>Vložené</div>
+          <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>{t.jointAccount.contributed}</div>
           <div className="text-[15px] font-semibold text-[#30d158]">
             {totalContributed.toFixed(2).replace('.', ',')} €
           </div>
         </div>
         <div className="flex-1 px-4 py-3 text-center">
-          <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>Minuté</div>
+          <div className="text-[12px] mb-1" style={{ color: '#8e8e93' }}>{t.jointAccount.spent}</div>
           <div className="text-[15px] font-semibold text-[#ff3b30]">
             {totalSpent.toFixed(2).replace('.', ',')} €
           </div>
@@ -115,7 +112,7 @@ export default function JointAccountView({
 
       {/* Member contributions */}
       <div className="mb-6">
-        <div className="text-[15px] font-bold text-white mb-3">Príspevky členov</div>
+        <div className="text-[15px] font-bold text-white mb-3">{t.jointAccount.memberContributions}</div>
         <div>
           {contributions.map((c, i) => {
             const pct = totalContributed > 0 ? (c.contributed / totalContributed) * 100 : 0
@@ -129,7 +126,7 @@ export default function JointAccountView({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[14px] font-medium text-white">{isMe ? 'Ty' : c.name.split(' ')[0]}</span>
+                    <span className="text-[14px] font-medium text-white">{isMe ? t.common.you : c.name.split(' ')[0]}</span>
                     <span className="text-[14px] font-mono font-semibold text-[#30d158]">
                       {c.contributed.toFixed(2).replace('.', ',')} €
                     </span>
@@ -154,9 +151,9 @@ export default function JointAccountView({
       {topCats.length > 0 && (
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[15px] font-bold text-white">Kategórie výdavkov</span>
+            <span className="text-[15px] font-bold text-white">{t.jointAccount.expenseCategories}</span>
             <Link href={`/groups/${group.id}/report`}>
-              <span className="text-[13px]" style={{ color: '#0a84ff' }}>Zobraziť všetky</span>
+              <span className="text-[13px]" style={{ color: '#0a84ff' }}>{t.jointAccount.showAll}</span>
             </Link>
           </div>
           <div>
@@ -191,18 +188,18 @@ export default function JointAccountView({
       {/* Recent expenses from pot */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[15px] font-bold text-white">Výdavky z fondu</span>
+          <span className="text-[15px] font-bold text-white">{t.jointAccount.fromPot}</span>
           <Link href={`/add-expense?groupId=${group.id}`}>
             <span className="text-[14px] flex items-center gap-1" style={{ color: '#0a84ff' }}>
-              <Plus size={14} />Pridať
+              <Plus size={14} />{t.common.add}
             </span>
           </Link>
         </div>
         {expenses.length === 0 ? (
           <div className="py-10 text-center">
             <div className="text-4xl mb-3">🤖</div>
-            <div className="text-[15px] font-medium text-white mb-1">Žiadne výdavky</div>
-            <div className="text-[13px]" style={{ color: '#8e8e93' }}>Pridaj prvý výdavok zo spoločného fondu</div>
+            <div className="text-[15px] font-medium text-white mb-1">{t.common.noExpenses}</div>
+            <div className="text-[13px]" style={{ color: '#8e8e93' }}>{t.jointAccount.noExpensesHint}</div>
           </div>
         ) : (
           <div>
@@ -231,7 +228,7 @@ export default function JointAccountView({
                 className="w-full py-3 text-[14px] font-medium text-center mt-1"
                 style={{ color: '#0a84ff' }}
               >
-                {showAllExpenses ? 'Zobraziť menej' : `Zobraziť všetky (${expenses.length})`}
+                {showAllExpenses ? t.common.showLess : t.jointAccount.showAllExpenses(expenses.length)}
               </button>
             )}
           </div>

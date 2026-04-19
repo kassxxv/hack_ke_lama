@@ -34,6 +34,17 @@ const ContributionSchema = new Schema({
   date: { type: String, default: () => new Date().toISOString().slice(0, 10) },
 }, { _id: false })
 
+const SubscriptionSchema = new Schema({
+  name: { type: String, required: true },
+  emoji: { type: String, default: '💳' },
+  monthlyCost: { type: Number, default: 0 },
+  username: { type: String, default: '' },
+  password: { type: String, default: '' },
+  paidBy: { type: String, default: '' },
+  sharedWith: { type: [String], default: [] },
+  nextBillingDate: { type: String, default: '' },
+}, { timestamps: true })
+
 const GroupSchema = new Schema({
   name: { type: String, required: true },
   type: { type: String, enum: ['family', 'roommates', 'peers'], required: true },
@@ -44,7 +55,13 @@ const GroupSchema = new Schema({
   potBalance: { type: Number, default: 0 },
   potTarget: { type: Number, default: null },
   contributions: { type: [ContributionSchema], default: [] },
+  subscriptions: { type: [SubscriptionSchema], default: [] },
 }, { timestamps: true })
 
-export const GroupModel = mongoose.models.Group ?? mongoose.model('Group', GroupSchema)
-export const ExpenseModel = mongoose.models.Expense ?? mongoose.model('Expense', ExpenseSchema)
+if (mongoose.models.Group) mongoose.deleteModel('Group')
+if (mongoose.models.Expense) mongoose.deleteModel('Expense')
+mongoose.model('Group', GroupSchema)
+mongoose.model('Expense', ExpenseSchema)
+
+export const GroupModel = mongoose.models.Group
+export const ExpenseModel = mongoose.models.Expense

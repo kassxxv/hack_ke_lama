@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import QuickActions from '@/components/QuickActions'
@@ -23,11 +25,13 @@ const TRANSACTIONS = [
   { id: 't5', merchant: 'Netflix', amount: -15.99, date: '1. apríl 2026', category: 'Predplatné', canSplit: false },
 ]
 
+type SettlementTx = { id: string; merchant: string; amount: number; date: string }
+
 async function getTeaserData() {
   try {
     const cookieStore = await cookies()
     const userId = cookieStore.get('sv_user_id')?.value
-    if (!userId) return { totalOwed: 0, groupCount: 0, userName: 'Filip' }
+    if (!userId) return { totalOwed: 0, groupCount: 0, userName: 'Filip', settlements: [] as SettlementTx[] }
 
     await connectDB()
     const user = await UserModel.findById(userId).lean() as { name: string } | null
@@ -35,11 +39,12 @@ async function getTeaserData() {
 
     let totalOwed = 0
     let groupCount = 0
+
     for (const g of groups) {
       const isMember = g.members.some(m => m.userId === userId)
       if (!isMember) continue
       groupCount++
-      const expenses = await ExpenseModel.find({ groupId: g._id }).lean() as { paidBy: string; amount: number; splits: { userId: string; amount: number; settled: boolean }[] }[]
+      const expenses = await ExpenseModel.find({ groupId: g._id, category: { $ne: 'settlement' } }).lean() as { paidBy: string; amount: number; splits: { userId: string; amount: number; settled: boolean }[] }[]
       expenses.forEach(e => {
         e.splits.forEach(s => {
           if (s.settled) return
@@ -49,14 +54,26 @@ async function getTeaserData() {
       })
     }
 
-    return { totalOwed, groupCount, userName: user?.name ?? 'Filip' }
+    // Fetch all settlements relevant to this user directly
+    const rawSettlements = await ExpenseModel.find({ category: 'settlement' }).lean() as { _id: { toString(): string }; paidBy: string; amount: number; date: string; merchant: string; splits: { userId: string; amount: number }[] }[]
+    const settlements: SettlementTx[] = rawSettlements
+      .filter(e => e.paidBy === userId || e.splits.some(s => s.userId === userId))
+      .map(e => ({
+        id: e._id.toString(),
+        merchant: e.merchant,
+        amount: e.paidBy === userId ? -e.amount : e.amount,
+        date: e.date,
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date))
+
+    return { totalOwed, groupCount, userName: user?.name ?? 'Filip', settlements }
   } catch {
-    return { totalOwed: 0, groupCount: 0, userName: 'Filip' }
+    return { totalOwed: 0, groupCount: 0, userName: 'Filip', settlements: [] as SettlementTx[] }
   }
 }
 
 export default async function Home() {
-  const { totalOwed, groupCount, userName } = await getTeaserData()
+  const { totalOwed, groupCount, userName, settlements } = await getTeaserData()
   const cookieStore = await cookies()
   const lang = getLang(cookieStore.get('sv_lang')?.value)
   const t = T[lang]
@@ -126,6 +143,25 @@ export default async function Home() {
           </div>
 
           <div>
+            {settlements.map((tx, i) => (
+              <div key={tx.id}
+                className="flex items-center gap-3 py-3"
+                style={{ borderBottom: '0.5px solid #38383a' }}
+              >
+                <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: '#1a3a1e' }}>
+                  ✅
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[14px] font-semibold truncate" style={{ color: '#30d158' }}>{tx.merchant}</div>
+                  <div className="text-[12px]" style={{ color: '#8e8e93' }}>Vyrovnanie · {tx.date}</div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-[15px] font-semibold text-[#30d158]">
+                    {tx.amount > 0 ? '+' : ''}{tx.amount.toFixed(2)} EUR
+                  </div>
+                </div>
+              </div>
+            ))}
             {TRANSACTIONS.map((tx, i) => (
               <Link key={tx.id} href={`/transaction/${tx.id}`}>
                 <div

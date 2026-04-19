@@ -63,3 +63,17 @@ export type Transaction = {
   category: string
   canSplit: boolean
 }
+
+export type Subscription = {
+  id: string
+  groupId: string
+  name: string
+  emoji: string
+  monthlyCost: number
+  username: string
+  password: string
+  paidBy: string
+  sharedWith: string[]
+  nextBillingDate?: string
+  createdAt?: string
+}

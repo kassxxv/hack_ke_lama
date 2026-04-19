@@ -49,7 +49,7 @@ export default function Onboarding() {
   return (
     <div className="min-h-dvh flex flex-col relative overflow-hidden" style={{ background: '#000000' }}>
 
-      <div className="absolute inset-0 flex items-center justify-center" style={{ top: '-10%', height: '65%' }}>
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ top: '-10%', height: '65%' }}>
         <BackgroundLines />
       </div>
 

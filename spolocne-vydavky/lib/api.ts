@@ -1,4 +1,4 @@
-import type { Group, Expense } from '@/types'
+import type { Group, Expense, Subscription } from '@/types'
 
 const BASE = '/api'
 
@@ -40,4 +40,25 @@ export async function settleDebt(groupId: string, fromId: string, toId: string):
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ fromId, toId }),
   })
+}
+
+export async function fetchSubscriptions(groupId: string): Promise<Subscription[]> {
+  const res = await fetch(`${BASE}/groups/${groupId}/subscriptions`, { cache: 'no-store' })
+  if (!res.ok) throw new Error('Failed to fetch subscriptions')
+  return res.json()
+}
+
+export async function createSubscription(groupId: string, data: Omit<Subscription, 'id' | 'groupId' | 'createdAt'>): Promise<Subscription> {
+  const res = await fetch(`${BASE}/groups/${groupId}/subscriptions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error('Failed to create subscription')
+  return res.json()
+}
+
+export async function deleteSubscription(groupId: string, subId: string): Promise<void> {
+  const res = await fetch(`${BASE}/groups/${groupId}/subscriptions/${subId}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error('Failed to delete subscription')
 }

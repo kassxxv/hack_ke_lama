@@ -7,46 +7,9 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useStore } from '@/lib/store'
+import { useLang } from '@/lib/use-lang'
 
 type AppGroupType = 'joint' | 'friends' | 'trip'
-
-const GROUP_OPTIONS: {
-  id: AppGroupType
-  emoji: string
-  icon: React.ElementType
-  label: string
-  subtitle: string
-  features: string[]
-  color: string
-}[] = [
-  {
-    id: 'joint',
-    emoji: '🏠',
-    icon: PiggyBank,
-    label: 'Spoločný účet',
-    subtitle: 'Rodina · Spolubývajúci',
-    features: ['Zdieľaný fond, do ktorého všetci prispievajú', 'Výdavky sa platia z fondu', 'Prehľad príspevkov každého člena'],
-    color: '#30d158',
-  },
-  {
-    id: 'friends',
-    emoji: '👫',
-    icon: Users,
-    label: 'Skupina priateľov',
-    subtitle: 'Priatelia · Kolegovia',
-    features: ['Každý platí sám, sledujeme kto komu dlhuje', 'Jasný prehľad dlhov', 'Jednoduché vyrovnanie jedným kliknutím'],
-    color: '#0a84ff',
-  },
-  {
-    id: 'trip',
-    emoji: '✈️',
-    icon: Plane,
-    label: 'Výlet / Udalosť',
-    subtitle: 'Dočasná skupina · Cestovanie',
-    features: ['Sleduje kto čo zaplatil za skupinu', 'Na konci ukáže % príspevok každého', 'Tlačidlo na okamžité vyrovnanie všetkých naraz'],
-    color: '#bf5af2',
-  },
-]
 
 function toDbType(t: AppGroupType) {
   if (t === 'joint') return 'family'
@@ -56,12 +19,22 @@ function toDbType(t: AppGroupType) {
 export default function NewGroupPage() {
   const router = useRouter()
   const { state } = useStore()
+  const { t } = useLang()
   const ME = state.currentUser
   const [step, setStep] = useState<1 | 2>(1)
   const [appType, setAppType] = useState<AppGroupType | null>(null)
   const [name, setName] = useState('')
   const [inviteInput, setInviteInput] = useState('')
   const [invites, setInvites] = useState<string[]>([])
+
+  const GROUP_OPTIONS: {
+    id: AppGroupType; emoji: string; icon: React.ElementType
+    label: string; subtitle: string; features: string[]; color: string
+  }[] = [
+    { id: 'joint', emoji: '🏠', icon: PiggyBank, color: '#30d158', ...t.newGroup.options.joint },
+    { id: 'friends', emoji: '👫', icon: Users, color: '#0a84ff', ...t.newGroup.options.friends },
+    { id: 'trip', emoji: '✈️', icon: Plane, color: '#bf5af2', ...t.newGroup.options.trip },
+  ]
 
   function addInvite() {
     const v = inviteInput.trim()
@@ -84,11 +57,7 @@ export default function NewGroupPage() {
     router.push('/groups')
   }
 
-  const placeholders: Record<AppGroupType, string> = {
-    joint: 'Napr. Rodina Novák 🏠',
-    friends: 'Napr. Párty u Tomáša 🎉',
-    trip: 'Napr. Výlet Tatry 🏔️',
-  }
+  const placeholders = t.newGroup.placeholders
 
   return (
     <TBShell>
@@ -105,15 +74,15 @@ export default function NewGroupPage() {
             </button>
           )}
           <h1 className="text-[17px] font-semibold text-white absolute left-1/2 -translate-x-1/2">
-            Nová skupina
+            {t.newGroup.title}
           </h1>
         </div>
 
         {step === 1 && (
           <>
-            <div className="text-[15px] font-bold text-white mb-1">Aký typ skupiny?</div>
+            <div className="text-[15px] font-bold text-white mb-1">{t.newGroup.askType}</div>
             <div className="text-[13px] mb-5" style={{ color: '#8e8e93' }}>
-              Podľa toho nastavíme správny režim
+              {t.newGroup.askTypeHint}
             </div>
 
             <div className="space-y-3 mb-6">
@@ -160,7 +129,7 @@ export default function NewGroupPage() {
               className="w-full py-4 rounded-2xl font-semibold text-[16px] transition-all"
               style={{ background: appType ? '#0a84ff' : '#2c2c2e', color: appType ? '#fff' : '#8e8e93' }}
             >
-              Ďalej
+              {t.common.next}
             </button>
           </>
         )}
@@ -176,7 +145,7 @@ export default function NewGroupPage() {
               </span>
             </div>
 
-            <div className="text-[15px] font-bold text-white mb-3">Pomenuj skupinu</div>
+            <div className="text-[15px] font-bold text-white mb-3">{t.newGroup.nameLabel}</div>
             <input
               type="text"
               placeholder={placeholders[appType]}
@@ -187,14 +156,14 @@ export default function NewGroupPage() {
               autoFocus
             />
 
-            <div className="text-[15px] font-bold text-white mb-1">Pridaj členov</div>
+            <div className="text-[15px] font-bold text-white mb-1">{t.newGroup.membersLabel}</div>
             <div className="text-[13px] mb-3" style={{ color: '#8e8e93' }}>
-              Menom alebo číslom
+              {t.newGroup.membersHint}
             </div>
             <div className="flex gap-2 mb-3">
               <input
                 type="text"
-                placeholder="+421 900 000 000 alebo meno"
+                placeholder={t.newGroup.invitePlaceholder}
                 value={inviteInput}
                 onChange={e => setInviteInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addInvite()}
@@ -206,7 +175,7 @@ export default function NewGroupPage() {
                 className="px-4 py-3 rounded-2xl text-[14px] font-semibold"
                 style={{ background: '#0a84ff', color: '#fff' }}
               >
-                Pridať
+                {t.newGroup.addBtn}
               </button>
             </div>
 
@@ -225,9 +194,9 @@ export default function NewGroupPage() {
             {/* Trip hint */}
             {appType === 'trip' && (
               <div className="rounded-2xl px-4 py-3 mb-4" style={{ background: '#2c1f3a', border: '1px solid #bf5af233' }}>
-                <div className="text-[12px] font-semibold mb-0.5" style={{ color: '#bf5af2' }}>Dočasná skupina</div>
+                <div className="text-[12px] font-semibold mb-0.5" style={{ color: '#bf5af2' }}>{t.newGroup.tempLabel}</div>
                 <div className="text-[12px]" style={{ color: '#8e8e93' }}>
-                  Skupina sa dá finalizovať keď je výlet hotový — ukáže kto prispel koľko % a vyrovná zostatky naraz.
+                  {t.newGroup.tempHint}
                 </div>
               </div>
             )}
@@ -238,14 +207,14 @@ export default function NewGroupPage() {
                 className="flex-1 py-4 rounded-2xl font-semibold text-[15px]"
                 style={{ background: '#1c1c1e', color: '#8e8e93', border: '1px solid #38383a' }}
               >
-                Späť
+                {t.common.back}
               </button>
               <button
                 onClick={handleCreate}
                 className="flex-1 py-4 rounded-2xl font-semibold text-[15px]"
                 style={{ background: name.trim() ? '#0a84ff' : '#2c2c2e', color: name.trim() ? '#fff' : '#8e8e93' }}
               >
-                Vytvoriť
+                {t.common.create}
               </button>
             </div>
           </>
