@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type React from 'react'
-import { Plus, PiggyBank, Users, BarChart2, KeyRound, SlidersHorizontal, AlertTriangle, Utensils, ShoppingCart, Car, Gamepad2, Home, Zap, DollarSign } from 'lucide-react'
+import { Plus, PiggyBank, Users, BarChart2, KeyRound, SlidersHorizontal, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import type { Group, Expense, BudgetLimit } from '@/types'
 import { useLang } from '@/lib/use-lang'
@@ -22,15 +21,15 @@ export default function JointAccountView({
   onManageMembers?: () => void
 }) {
   const { t } = useLang()
-  const CAT_META: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-    food:          { label: t.categories.food,          color: '#ff3b30', icon: Utensils },
-    groceries:     { label: t.categories.groceries,     color: '#ffd60a', icon: ShoppingCart },
-    transport:     { label: t.categories.transport,     color: '#30d158', icon: Car },
-    entertainment: { label: t.categories.entertainment, color: '#0a84ff', icon: Gamepad2 },
-    housing:       { label: t.categories.housing,       color: '#bf5af2', icon: Home },
-    other:         { label: t.categories.other,         color: '#ff9f0a', icon: Zap },
+  const CAT_META: Record<string, { label: string; color: string; emoji: string }> = {
+    food:          { label: t.categories.food,          color: '#ff3b30', emoji: '🍽️' },
+    groceries:     { label: t.categories.groceries,     color: '#ffd60a', emoji: '🛒' },
+    transport:     { label: t.categories.transport,     color: '#30d158', emoji: '🚗' },
+    entertainment: { label: t.categories.entertainment, color: '#0a84ff', emoji: '🎮' },
+    housing:       { label: t.categories.housing,       color: '#bf5af2', emoji: '🏠' },
+    other:         { label: t.categories.other,         color: '#ff9f0a', emoji: '💡' },
   }
-  const catMeta = (cat: string) => CAT_META[cat] ?? { label: cat, color: '#8e8e93', icon: DollarSign }
+  const catMeta = (cat: string) => CAT_META[cat] ?? { label: cat, color: '#8e8e93', emoji: '💰' }
   const potBalance = group.potBalance ?? 0
   const contributions = group.members.map(m => ({
     userId: m.user.id,
@@ -188,9 +187,9 @@ export default function JointAccountView({
             {topCats.map((c, i) => (
               <div key={c.cat} className="flex items-center gap-3 py-3"
                 style={{ borderBottom: i < topCats.length - 1 ? '0.5px solid #38383a' : 'none' }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-[18px] flex-shrink-0"
                   style={{ background: c.color + '22' }}>
-                  <c.icon size={18} color={c.color} strokeWidth={1.8} />
+                  {c.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
@@ -269,9 +268,9 @@ export default function JointAccountView({
               return (
                 <div key={e.id} className="flex items-center gap-3 py-3"
                   style={{ borderBottom: i < recentExpenses.length - 1 ? '0.5px solid #38383a' : 'none' }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-[18px] flex-shrink-0"
                     style={{ background: meta.color + '22' }}>
-                    <meta.icon size={18} color={meta.color} strokeWidth={1.8} />
+                    {meta.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[14px] font-semibold text-white truncate">{e.merchant}</div>

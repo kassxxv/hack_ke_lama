@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import type React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import TBShell from '@/components/TBShell'
 import ExpenseRow from '@/components/ExpenseRow'
@@ -11,8 +10,7 @@ import { calculateDebts } from '@/lib/debt'
 import { settleDebt } from '@/lib/api'
 import {
   ChevronDown, BarChart2, Users, Plus, ArrowLeftRight,
-  ArrowRight, Volume2, Download, Settings, Camera, KeyRound,
-  Utensils, ShoppingCart, Car, Gamepad2, Home, Zap, DollarSign
+  ArrowRight, Volume2, Download, Settings, Camera, KeyRound
 } from 'lucide-react'
 import Link from 'next/link'
 import { useStore } from '@/lib/store'
@@ -80,14 +78,14 @@ export default function GroupsPage() {
   }, 0)
   const settledPct = totalExpenses > 0 ? (settledAmount / totalExpenses) * 100 : 0
 
-  const CAT_META: Record<string, { label: string; color: string; icon: React.ElementType }> = {
-    food:          { label: t.categories.food,         color: '#ff3b30', icon: Utensils },
-    groceries:     { label: t.categories.groceries,    color: '#ffd60a', icon: ShoppingCart },
-    transport:     { label: t.categories.transport,    color: '#30d158', icon: Car },
-    entertainment: { label: t.categories.entertainment,color: '#0a84ff', icon: Gamepad2 },
-    housing:       { label: t.categories.housing,      color: '#bf5af2', icon: Home },
-    other:         { label: t.categories.other,        color: '#ff9f0a', icon: Zap },
-    settlement:    { label: t.categories.settlement,   color: '#30d158', icon: DollarSign },
+  const CAT_META: Record<string, { label: string; color: string; emoji: string }> = {
+    food:          { label: t.categories.food,         color: '#ff3b30', emoji: '🍽️' },
+    groceries:     { label: t.categories.groceries,    color: '#ffd60a', emoji: '🛒' },
+    transport:     { label: t.categories.transport,    color: '#30d158', emoji: '🚗' },
+    entertainment: { label: t.categories.entertainment,color: '#0a84ff', emoji: '🎮' },
+    housing:       { label: t.categories.housing,      color: '#bf5af2', emoji: '🏠' },
+    other:         { label: t.categories.other,        color: '#ff9f0a', emoji: '💡' },
+    settlement:    { label: t.categories.settlement,   color: '#30d158', emoji: '✅' },
   }
   const catMap: Record<string, number> = {}
   for (const e of expenses) catMap[e.category] = (catMap[e.category] ?? 0) + e.amount
@@ -95,7 +93,7 @@ export default function GroupsPage() {
     .map(([cat, amount]) => ({
       cat, amount,
       pct: totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0,
-      ...(CAT_META[cat] ?? { label: cat, color: '#8e8e93', icon: DollarSign }),
+      ...(CAT_META[cat] ?? { label: cat, color: '#8e8e93', emoji: '💰' }),
     }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 4)
@@ -457,7 +455,7 @@ export default function GroupsPage() {
                                 {relatedExpenses.map(e => (
                                   <span key={e.id} className="px-2 py-0.5 rounded-full text-[11px]"
                                     style={{ background: '#2c2c2e', color: '#8e8e93' }}>
-                                    {e.merchant} · {e.splits.find(s => s.userId === d.fromId)?.amount.toFixed(2).replace('.', ',')} €
+                                    {CAT_META[e.category]?.emoji ?? '💳'} {e.merchant} · {e.splits.find(s => s.userId === d.fromId)?.amount.toFixed(2).replace('.', ',')} €
                                   </span>
                                 ))}
                               </div>
@@ -551,9 +549,9 @@ export default function GroupsPage() {
                       {topCategories.map((c, i) => (
                         <div key={c.cat} className="flex items-center gap-3 py-3"
                           style={{ borderBottom: i < topCategories.length - 1 ? '0.5px solid #38383a' : 'none' }}>
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center text-[18px] flex-shrink-0"
                             style={{ background: c.color + '22' }}>
-                            <c.icon size={18} color={c.color} strokeWidth={1.8} />
+                            {c.emoji}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1.5">
