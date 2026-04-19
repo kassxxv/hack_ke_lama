@@ -32,7 +32,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   const rawExpenses = await ExpenseModel.find({ groupId: id }).lean() as { _id: { toString(): string }; groupId: unknown; amount: number; paidBy: string; splits: { userId: string; amount: number; settled: boolean }[]; merchant: string; date: string; isPersonal: boolean; category: string }[]
   const balances = calcBalances(group.members, rawExpenses)
 
-  const g = group as typeof group & { potBalance?: number; potTarget?: number }
+  const g = group as typeof group & { potBalance?: number; potTarget?: number; budgetLimits?: { category: string; limitAmount: number }[] }
   const result = {
     id: group._id.toString(),
     name: group.name,
@@ -41,6 +41,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
     isTemporary: group.isTemporary,
     potBalance: g.potBalance ?? 0,
     potTarget: g.potTarget ?? null,
+    budgetLimits: g.budgetLimits ?? [],
     members: group.members.map(m => ({
       user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor },
       role: m.role,
@@ -63,4 +64,13 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
   }))
 
   return NextResponse.json({ group: result, expenses })
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await connectDB()
+  const { id } = await params
+  const body = await req.json() as { budgetLimits?: { category: string; limitAmount: number }[] }
+  if (!Array.isArray(body.budgetLimits)) return NextResponse.json({ error: 'invalid' }, { status: 400 })
+  await GroupModel.findByIdAndUpdate(id, { budgetLimits: body.budgetLimits })
+  return NextResponse.json({ ok: true })
 }

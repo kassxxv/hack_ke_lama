@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import type { Group } from '@/types'
 import RoleBadge from './RoleBadge'
 
@@ -15,7 +18,11 @@ export default function GroupCard({ group, currentUserId }: GroupCardProps) {
 
   return (
     <Link href={`/groups/${group.id}`}>
-      <div className="flex items-center gap-3 py-3">
+      <motion.div
+        className="flex items-center gap-3 py-3"
+        whileTap={{ scale: 0.97, opacity: 0.85 }}
+        transition={{ duration: 0.12 }}
+      >
         <div
           className="w-11 h-11 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
           style={{ background: '#1c1c1e' }}
@@ -50,7 +57,7 @@ export default function GroupCard({ group, currentUserId }: GroupCardProps) {
             </>
           )}
         </div>
-      </div>
+      </motion.div>
     </Link>
   )
 }

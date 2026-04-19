@@ -3,6 +3,8 @@ export const dynamic = 'force-dynamic'
 import TBShell from '@/components/TBShell'
 import SwipeLayout from '@/components/SwipeLayout'
 import QuickActions from '@/components/QuickActions'
+import PageTransition from '@/components/PageTransition'
+import BalanceDisplay from '@/components/BalanceDisplay'
 import { Mail, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { cookies } from 'next/headers'
@@ -89,6 +91,7 @@ export default async function Home() {
   return (
     <TBShell>
       <SwipeLayout onSwipeLeft="/groups">
+        <PageTransition>
         <div className="px-4 pt-3">
 
           {/* Top bar — avatar absolutely centered */}
@@ -113,7 +116,7 @@ export default async function Home() {
           {/* Balance on black */}
           <div className="text-center mb-1">
             <div className="flex items-baseline justify-center gap-2">
-              <span className="text-[42px] font-bold text-white tracking-tight">2 341,50</span>
+              <BalanceDisplay value={2341.50} fallback="2 341,50" />
               <span className="text-[22px] font-semibold" style={{ color: '#8e8e93' }}>EUR</span>
             </div>
             <div className="text-[12px]" style={{ color: '#8e8e93' }}>{t.balanceLabel}</div>
@@ -128,7 +131,7 @@ export default async function Home() {
                   <stop offset="100%" stopColor="#0a84ff" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              <path d="M0 60 Q40 55 80 50 Q120 45 140 48 Q180 52 200 40 Q230 28 260 35 Q300 42 320 25 Q350 10 390 15" fill="none" stroke="#0a84ff" strokeWidth="2" />
+              <path className="sparkline-path" d="M0 60 Q40 55 80 50 Q120 45 140 48 Q180 52 200 40 Q230 28 260 35 Q300 42 320 25 Q350 10 390 15" fill="none" stroke="#0a84ff" strokeWidth="2" />
               <path d="M0 60 Q40 55 80 50 Q120 45 140 48 Q180 52 200 40 Q230 28 260 35 Q300 42 320 25 Q350 10 390 15 L390 80 L0 80 Z" fill="url(#cg)" />
             </svg>
             <div className="absolute bottom-0 left-0 right-0 flex justify-between px-1">
@@ -151,8 +154,8 @@ export default async function Home() {
           <div>
             {settlements.map((tx, i) => (
               <div key={tx.id}
-                className="flex items-center gap-3 py-3"
-                style={{ borderBottom: '0.5px solid #38383a' }}
+                className="fade-up flex items-center gap-3 py-3"
+                style={{ borderBottom: '0.5px solid #38383a', animationDelay: `${i * 0.07}s` }}
               >
                 <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: '#1a3a1e' }}>
                   ✅
@@ -171,8 +174,8 @@ export default async function Home() {
             {TRANSACTIONS.map((tx, i) => (
               <Link key={tx.id} href={`/transaction/${tx.id}`}>
                 <div
-                  className="flex items-center gap-3 py-3"
-                  style={{ borderBottom: i < TRANSACTIONS.length - 1 ? '0.5px solid #38383a' : 'none' }}
+                  className="fade-up flex items-center gap-3 py-3"
+                  style={{ borderBottom: i < TRANSACTIONS.length - 1 ? '0.5px solid #38383a' : 'none', animationDelay: `${(settlements.length + i) * 0.07}s` }}
                 >
                   <div className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 text-lg" style={{ background: tx.amount < 0 ? '#3a1c1c' : '#1a3a1e' }}>
                     {CATEGORY_EMOJI[tx.category] ?? '💳'}
@@ -198,6 +201,7 @@ export default async function Home() {
           </div>
           <div className="h-4" />
         </div>
+        </PageTransition>
       </SwipeLayout>
     </TBShell>
   )

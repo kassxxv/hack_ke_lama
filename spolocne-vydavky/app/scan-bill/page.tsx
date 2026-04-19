@@ -46,9 +46,9 @@ function ScanBillInner() {
   const ME = state.currentUser?.id ?? ''
 
   const [group, setGroup] = useState<Group | null>(null)
-  const [items, setItems] = useState<BillItem[]>(receiptToItems(MOCK_RECEIPT))
-  const [merchant, setMerchant] = useState(MOCK_RECEIPT.merchant)
-  const [receiptDate, setReceiptDate] = useState(MOCK_RECEIPT.date)
+  const [items, setItems] = useState<BillItem[]>([])
+  const [merchant, setMerchant] = useState('')
+  const [receiptDate, setReceiptDate] = useState(new Date().toISOString().slice(0, 10))
   const [scanning, setScanning] = useState(false)
   const [scanned, setScanned] = useState(false) // true = real scan done
   const [saving, setSaving] = useState(false)
