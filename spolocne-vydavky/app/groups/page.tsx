@@ -100,7 +100,7 @@ export default function GroupsPage() {
     { label: t.groupsPage.voiceSummary, icon: Volume2, action: () => setToast(t.groupsPage.voiceSoon) },
   ] : [
     { label: t.groupsPage.expenseReport, icon: BarChart2, href: selectedGroup ? `/groups/${selectedGroup.id}/report` : '/groups' },
-    { label: t.groupsPage.membersMgmt, icon: Users, href: selectedGroup ? `/groups/${selectedGroup.id}/members` : '/groups' },
+    { label: t.groupsPage.membersMgmt, icon: Users, action: () => setToast(t.groupsPage.membersSoon) },
     { label: t.groupsPage.addExpense, icon: Plus, href: selectedGroup ? `/add-expense?groupId=${selectedGroup.id}` : '/add-expense' },
     { label: t.groupsPage.subscriptions, icon: KeyRound, href: selectedGroup ? `/groups/${selectedGroup.id}/subscriptions` : '/groups' },
     { label: t.groupsPage.settleDebts, icon: ArrowLeftRight, action: () => setToast(t.groupsPage.settleSoon) },
