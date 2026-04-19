@@ -46,9 +46,8 @@ export async function GET() {
     }))
     return NextResponse.json(result)
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    console.error('[GET /api/groups]', msg)
-    return NextResponse.json({ error: msg }, { status: 500 })
+    console.error('[GET /api/groups]', err)
+    return NextResponse.json({ error: 'Failed to load groups' }, { status: 500 })
   }
 }
 
