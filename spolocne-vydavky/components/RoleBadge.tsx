@@ -4,8 +4,6 @@ const CONFIG: Record<Role, { label: string; bg: string; color: string }> = {
   admin:  { label: 'Admin',  bg: '#1c3a5e', color: '#0a84ff' },
   member: { label: 'Člen',   bg: '#2c2c2e', color: '#8e8e93' },
   junior: { label: 'Junior', bg: '#1a3a1e', color: '#30d158' },
-  parent: { label: 'Rodič',  bg: '#2c1f3a', color: '#bf5af2' },
-  child:  { label: 'Dieťa',  bg: '#1a3a1e', color: '#30d158' },
 }
 
 export default function RoleBadge({ role }: { role: Role }) {

@@ -22,7 +22,7 @@ const MemberSchema = new Schema({
   name: String,
   phone: String,
   avatarColor: String,
-  role: { type: String, enum: ['admin', 'member', 'junior', 'parent', 'child'], default: 'member' },
+  role: { type: String, enum: ['admin', 'member', 'junior'], default: 'member' },
   // joint-account groups only
   contributed: { type: Number, default: 0 },
 }, { _id: false })

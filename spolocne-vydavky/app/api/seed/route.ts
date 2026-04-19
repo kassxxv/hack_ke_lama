@@ -10,24 +10,24 @@ export async function GET() {
   await GroupModel.deleteMany({})
   await ExpenseModel.deleteMany({})
 
-  const [filip, archie, lana1, fox, lana2] = await UserModel.insertMany([
-    { name: 'Filip',  phone: '+421 900 000 001', avatarColor: '#5B5EA6' },
-    { name: 'Archie', phone: '+421 900 333 444', avatarColor: '#9B5EA6' },
-    { name: 'Lana',   phone: '+421 900 555 666', avatarColor: '#5EA6A0' },
-    { name: 'Fox',    phone: '+421 900 777 888', avatarColor: '#A65E5E' },
-    { name: 'Lana',   phone: '+421 900 999 000', avatarColor: '#5EA6A0' },
-  ])
+  const filip = await UserModel.create({
+    name: 'Filip',
+    phone: '+421 900 000 001',
+    avatarColor: '#5B5EA6',
+  })
 
-  function member(u: typeof filip, role: string, contributed = 0) {
-    return { userId: u._id.toString(), name: u.name, phone: u.phone, avatarColor: u.avatarColor, role, contributed }
+  const u2 = { userId: 'u2', name: 'Archie',  phone: '+421 900 333 444', avatarColor: '#9B5EA6', role: 'member' }
+  const u3 = { userId: 'u3', name: 'Lana',    phone: '+421 900 555 666', avatarColor: '#5EA6A0', role: 'member' }
+  const u4 = { userId: 'u4', name: 'Fox',     phone: '+421 900 777 888', avatarColor: '#A65E5E', role: 'member' }
+  const u5 = { userId: 'u5', name: 'Lana',    phone: '+421 900 999 000', avatarColor: '#5EA6A0', role: 'member' }
+
+  const filipMember = {
+    userId: filip._id.toString(),
+    name: filip.name,
+    phone: filip.phone,
+    avatarColor: filip.avatarColor,
+    role: 'admin',
   }
-
-  const u2 = { userId: archie._id.toString(), name: archie.name, phone: archie.phone, avatarColor: archie.avatarColor, role: 'parent' }
-  const u3 = { userId: lana1._id.toString(),  name: lana1.name,  phone: lana1.phone,  avatarColor: lana1.avatarColor,  role: 'child'  }
-  const u4 = { userId: fox._id.toString(),    name: fox.name,    phone: fox.phone,    avatarColor: fox.avatarColor,    role: 'child'  }
-  const u5 = { userId: lana2._id.toString(),  name: lana2.name,  phone: lana2.phone,  avatarColor: lana2.avatarColor,  role: 'member' }
-
-  const filipMember = member(filip, 'parent')
 
   const [rodina, bytak, vylet] = await GroupModel.insertMany([
     {
@@ -38,14 +38,14 @@ export async function GET() {
       potBalance: 340.50,
       potTarget: 500,
       members: [
-        member(filip, 'parent', 200),
+        { ...filipMember, contributed: 200 },
         { ...u2, contributed: 200 },
-        { ...u3, contributed: 0 },
-        { ...u4, contributed: 0 },
+        { ...u3, contributed: 100 },
       ],
       contributions: [
-        { userId: filip._id.toString(), amount: 200, note: 'Apríl — môj príspevok', date: '2026-04-01' },
-        { userId: archie._id.toString(), amount: 200, note: 'Apríl — Archie',       date: '2026-04-02' },
+        { userId: filipMember.userId, amount: 200, note: 'Apríl — môj príspevok', date: '2026-04-01' },
+        { userId: u2.userId,          amount: 200, note: 'Apríl — Archie',        date: '2026-04-02' },
+        { userId: u3.userId,          amount: 100, note: 'Apríl — Lana',          date: '2026-04-03' },
       ],
       subscriptions: [
         {
@@ -55,7 +55,7 @@ export async function GET() {
           username: 'novak.family@gmail.com',
           password: 'N3tfl1x!Rodina2026',
           paidBy: filipMember.userId,
-          sharedWith: [filipMember.userId, u2.userId, u3.userId, u4.userId],
+          sharedWith: [filipMember.userId, u2.userId, u3.userId],
           nextBillingDate: '2026-05-02',
         },
         {
@@ -65,7 +65,7 @@ export async function GET() {
           username: 'novak.family',
           password: 'Sp0t!fy-Family#26',
           paidBy: u2.userId,
-          sharedWith: [filipMember.userId, u2.userId, u3.userId, u4.userId],
+          sharedWith: [filipMember.userId, u2.userId, u3.userId],
           nextBillingDate: '2026-05-10',
         },
         {
@@ -75,7 +75,7 @@ export async function GET() {
           username: 'rodina.novak@icloud.com',
           password: 'iCl0ud-Rodina!',
           paidBy: filipMember.userId,
-          sharedWith: [filipMember.userId, u2.userId, u3.userId, u4.userId],
+          sharedWith: [filipMember.userId, u2.userId, u3.userId],
           nextBillingDate: '2026-05-05',
         },
       ],
