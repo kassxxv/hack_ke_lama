@@ -36,7 +36,7 @@ export async function GET() {
         isTemporary: g.isTemporary,
         potBalance: (g as typeof g & { potBalance?: number }).potBalance ?? 0,
         potTarget: (g as typeof g & { potTarget?: number }).potTarget ?? null,
-        budgetLimits: ((g as typeof g & { budgetLimits?: { category: string; limitAmount: number }[] }).budgetLimits ?? []).map(b => ({ category: b.category, limitAmount: b.limitAmount })),
+        budgetLimits: ((g as typeof g & { budgetLimits?: { category: string; limitAmount: number }[] }).budgetLimits ?? []).map((b: { category: string; limitAmount: number }) => ({ category: b.category, limitAmount: b.limitAmount })),
         members: members.map(m => ({
           user: { id: m.userId, name: m.name, phone: m.phone, avatarColor: m.avatarColor },
           role: m.role,
